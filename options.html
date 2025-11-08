@@ -1,0 +1,128 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title data-i18n="options_title">Send-to-AI Options</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="options">
+    <header class="options-header">
+      <div class="logo">🤖</div>
+      <div>
+        <h1 data-i18n="options_title">Send-to-AI — Settings</h1>
+        <p class="muted" data-i18n="options_subtitle">Manage default settings, platforms, and prompt templates.</p>
+      </div>
+    </header>
+
+    <main>
+      <section class="card">
+        <h2 data-i18n="general_heading">General</h2>
+        <div class="row">
+          <label for="defaultLang" data-i18n="default_translation_label">Default translation language</label>
+          <select id="defaultLang">
+            <option value="English">English</option>
+            <option value="Vietnamese">Vietnamese</option>
+            <option value="Spanish">Spanish</option>
+            <option value="French">French</option>
+            <option value="German">German</option>
+            <option value="Chinese (Simplified)">Chinese (Simplified)</option>
+            <option value="Chinese (Traditional)">Chinese (Traditional)</option>
+            <option value="Japanese">Japanese</option>
+            <option value="Korean">Korean</option>
+            <option value="Portuguese">Portuguese</option>
+            <option value="Russian">Russian</option>
+            <option value="Arabic">Arabic</option>
+            <option value="Hindi">Hindi</option>
+            <option value="Italian">Italian</option>
+            <option value="Dutch">Dutch</option>
+            <option value="Swedish">Swedish</option>
+            <option value="Norwegian">Norwegian</option>
+            <option value="Danish">Danish</option>
+            <option value="Finnish">Finnish</option>
+            <option value="Polish">Polish</option>
+            <option value="Czech">Czech</option>
+            <option value="Turkish">Turkish</option>
+            <option value="Indonesian">Indonesian</option>
+            <option value="Thai">Thai</option>
+            <option value="Malay">Malay</option>
+            <option value="Hebrew">Hebrew</option>
+            <option value="Greek">Greek</option>
+            <option value="Hungarian">Hungarian</option>
+            <option value="Romanian">Romanian</option>
+            <option value="Bulgarian">Bulgarian</option>
+            <option value="Slovak">Slovak</option>
+            <option value="Lithuanian">Lithuanian</option>
+            <option value="Latvian">Latvian</option>
+            <option value="Estonian">Estonian</option>
+            <option value="Ukrainian">Ukrainian</option>
+            <option value="Catalan">Catalan</option>
+          </select>
+        </div>
+        <div class="row actions">
+          <button id="saveSettings" class="primary" data-i18n="save_settings">Save Settings</button>
+          <button id="resetSettings" class="secondary" data-i18n="reset_settings">Reset to defaults</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2 data-i18n="platforms_heading">Platforms (custom endpoints)</h2>
+        <div id="platformList" class="list"></div>
+        <div class="row actions">
+          <button id="addPlatform" class="primary" data-i18n="add_platform">Add Platform</button>
+        </div>
+      </section>
+
+      <section class="card">
+        <h2 data-i18n="templates_heading">Prompt Templates</h2>
+        <div id="templateList" class="list"></div>
+        <div class="row actions">
+          <button id="addTemplate" class="primary" data-i18n="add_template">Add Template</button>
+        </div>
+      </section>
+
+  <p class="muted small" data-i18n="changes_saved_note">Changes are saved to extension storage. Use the extension context menu or popup to send selections to AI platforms.</p>
+    </main>
+  </div>
+
+  <script src="i18n.js"></script>
+  <script type="module" src="options.js"></script>
+
+  <!-- Inline editor modal (used for platforms and templates) -->
+  <div id="editorModal" class="modal hidden" role="dialog" aria-modal="true" aria-hidden="true">
+    <div class="modal-backdrop"></div>
+    <div class="modal-content" role="document">
+      <h3 id="modalTitle">Edit</h3>
+      <form id="modalForm">
+        <div id="platformFields">
+          <label data-i18n="modal_label_key">Key <input id="modal_platform_key" name="platform_key" required /></label>
+          <label data-i18n="modal_label_name">Name <input id="modal_platform_name" name="platform_name" required /></label>
+          <label data-i18n="modal_label_base_url">Base URL <input id="modal_platform_url" name="platform_url" placeholder="https://" /></label>
+          <label data-i18n="modal_label_input_selector">Message input selector <input id="modal_platform_input_selector" name="platform_input_selector" placeholder="e.g. textarea, div[contenteditable=true]" /></label>
+          <label data-i18n="modal_label_send_selector">Send button selector <input id="modal_platform_send_selector" name="platform_send_selector" placeholder="e.g. button[aria-label=Send]" /></label>
+        </div>
+
+        <div id="templateFields" class="hidden">
+          <label data-i18n="modal_label_action">Action
+            <select id="modal_template_action" name="template_action">
+              <option value="answer" data-i18n="action_answer">Answer</option>
+              <option value="rewrite" data-i18n="action_rewrite">Rewrite</option>
+              <option value="translate" data-i18n="action_translate">Translate</option>
+            </select>
+          </label>
+          <label data-i18n="modal_label_template_id">Template ID <input id="modal_template_id" name="template_id" required /></label>
+          <label data-i18n="modal_label_template_name">Template Name <input id="modal_template_name" name="template_name" required /></label>
+          <label data-i18n="modal_label_template_text">Template Text <textarea id="modal_template_text" name="template_text" rows="4"></textarea></label>
+        </div>
+
+        <div class="row actions" style="margin-top:12px">
+          <button type="button" id="modalSave" class="primary" data-i18n="modal_save">Save</button>
+          <button type="button" id="modalCancel" class="secondary" data-i18n="modal_cancel">Cancel</button>
+        </div>
+      </form>
+    </div>
+  </div>
+  <!-- Toast container for non-blocking notifications -->
+  <div id="toastContainer" aria-live="polite" aria-atomic="true"></div>
+</body>
+</html>

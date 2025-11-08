@@ -1,0 +1,71 @@
+:root{
+	--bg:#ffffff;
+	--surface:#f7f8fa;
+	--accent:#2563eb;
+	--muted:#6b7280;
+	--text:#0f172a;
+	--success:#16a34a;
+}
+*{box-sizing:border-box}
+body{
+	font-family: Inter, system-ui, Arial, Helvetica, sans-serif;
+	margin:0; color:var(--text); background:var(--bg); padding:12px;
+}
+.popup{ width:340px; max-width:92vw; }
+.popup-header{ display:flex; align-items:center; gap:8px; padding-bottom:8px }
+.logo{ width:36px; height:36px; display:flex; align-items:center; justify-content:center; background:var(--surface); border-radius:8px; font-size:18px }
+.title{ font-weight:700; font-size:16px }
+.icon-btn{ margin-left:auto; background:transparent; border:none; cursor:pointer; font-size:16px }
+.content{ background:transparent }
+textarea#inputText{ width:100%; resize:vertical; border:1px solid #e6e9ef; border-radius:8px; padding:8px; font-size:13px; color:var(--text); min-height:84px }
+.platform-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px }
+.platform-item{ background:#fff; border:1px solid #e6e9ef; padding:8px 10px; border-radius:8px; cursor:pointer; font-weight:600; font-size:13px }
+.platform-item:hover{ box-shadow:0 4px 10px rgba(16,24,40,0.06); transform:translateY(-1px) }
+.footer-row{ display:flex; gap:8px; margin-top:10px; align-items:center }
+select#templateSelect{ flex:1; padding:7px 8px; border-radius:8px; border:1px solid #e6e9ef }
+button.secondary{ background:transparent; border:1px solid #e6e9ef; padding:7px 10px; border-radius:8px; cursor:pointer }
+.status{ margin-top:8px; font-size:13px; color:var(--muted); min-height:18px }
+.sr-only{ position:absolute; left:-9999px; }
+
+@media (max-width:380px){
+	.platform-grid{ grid-template-columns:repeat(2,1fr) }
+}
+
+/* Options page styles */
+.options{ max-width:900px; margin:18px auto; padding:6px }
+.options-header{ display:flex; gap:12px; align-items:center; margin-bottom:12px }
+.options-header .logo{ width:48px; height:48px; font-size:20px }
+.options h1{ margin:0; font-size:18px }
+.card{ background:#fff; border:1px solid #e6e9ef; border-radius:10px; padding:12px; margin-bottom:12px }
+.row{ display:flex; gap:8px; align-items:center; margin-top:8px }
+.row label{ width:220px }
+input[type="text"], textarea{ padding:8px; border-radius:8px; border:1px solid #e6e9ef; flex:1 }
+.list .platform-item{ display:flex; justify-content:space-between; align-items:center; gap:8px; padding:8px; border-radius:8px; border:1px dashed #e6e9ef; margin:6px 0; background: #fbfcfe }
+.list ul{ padding-left:18px }
+.actions{ margin-top:12px }
+.primary{ background:var(--accent); color:#fff; border:none; padding:8px 12px; border-radius:8px; cursor:pointer }
+.secondary{ background:transparent; border:1px solid #e6e9ef; padding:8px 12px; border-radius:8px; cursor:pointer }
+.small{ font-size:13px }
+
+@media (max-width:720px){ .row{ flex-direction:column; align-items:stretch } .row label{ width:auto } }
+
+/* Modal editor */
+.modal.hidden{ display:none }
+.modal{ position:fixed; inset:0; display:flex; align-items:center; justify-content:center; z-index:1200 }
+.modal-backdrop{ position:absolute; inset:0; background:rgba(2,6,23,0.5) }
+.modal-content{ position:relative; background:#fff; border-radius:12px; padding:16px; width:720px; max-width:94vw; box-shadow:0 10px 30px rgba(2,6,23,0.2); border:1px solid #e6e9ef }
+.modal-content h3{ margin:0 0 8px 0 }
+.modal-content label{ display:block; margin:8px 0 }
+.i18n-label{ display:inline-block; margin-right:8px; font-weight:600 }
+.modal-content input[type="text"], .modal-content textarea, .modal-content select{ width:100%; padding:8px; border-radius:8px; border:1px solid #e6e9ef }
+#templateFields.hidden, #platformFields.hidden{ display:none }
+
+/* Toast notifications */
+#toastContainer{ position:fixed; right:18px; bottom:18px; z-index:1300; display:flex; flex-direction:column; gap:8px; align-items:flex-end }
+.toast{ min-width:220px; max-width:360px; background:#111827; color:#fff; padding:10px 12px; border-radius:8px; box-shadow:0 8px 20px rgba(2,6,23,0.2); display:flex; gap:10px; align-items:center }
+.toast.success{ background:linear-gradient(90deg,#0ea5a4,#10b981) }
+.toast.error{ background:linear-gradient(90deg,#ef4444,#f97316) }
+.toast .toast-msg{ flex:1; font-size:13px }
+.toast .toast-actions{ display:flex; gap:8px; }
+.toast button.btn-inline{ background:transparent; border:1px solid rgba(255,255,255,0.18); color:#fff; padding:6px 8px; border-radius:6px; cursor:pointer }
+.toast button.btn-inline.primary{ background:rgba(255,255,255,0.12) }

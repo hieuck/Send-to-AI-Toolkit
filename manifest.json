@@ -1,0 +1,46 @@
+{
+  "manifest_version": 3,
+  "name": "Send-to-AI",
+  "description": "Send selected text or links to various AI platforms (ChatGPT, Gemini, Claude, POE, DeepSeek, Perplexity) with templated prompts.",
+  "version": "0.1.0",
+  "default_locale": "vi",
+  "icons": {
+    "16": "icons/icon16.svg",
+    "48": "icons/icon48.svg",
+    "128": "icons/icon128.svg"
+  },
+  "permissions": [
+    "contextMenus",
+    "storage",
+    "activeTab",
+    "scripting"
+  ],
+  "host_permissions": ["<all_urls>"],
+  "background": {
+    "service_worker": "background.js",
+    "type": "module"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_icon": {
+      "16": "icons/icon16.svg",
+      "48": "icons/icon48.svg"
+    }
+  },
+  "options_page": "options.html",
+  "content_scripts": [
+    {
+      "matches": [
+        "https://chat.openai.com/*",
+        "https://*.openai.com/*",
+        "https://*.google.com/*",
+        "https://perplexity.ai/*",
+        "https://poe.com/*",
+        "https://*.claude.ai/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_idle"
+    }
+  ],
+  "minimum_chrome_version": "88"
+}

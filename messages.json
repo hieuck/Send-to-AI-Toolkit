@@ -1,0 +1,4 @@
+{
+  "extension_name": { "message": "Send-to-AI" },
+  "extension_description": { "message": "Send selected text or links to AI platforms with templated prompts." }
+}

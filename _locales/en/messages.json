@@ -1,0 +1,60 @@
+{
+  "extension_name": { "message": "Send-to-AI" },
+  "extension_description": { "message": "Send selected text or links to AI platforms with templated prompts." }
+  ,"open_settings": { "message": "Settings" }
+  ,"popup_placeholder": { "message": "Paste or type text here, or select text on a page and use the context menu..." }
+  ,"choose_template": { "message": "-- Choose template --" }
+  ,"clear": { "message": "Clear" }
+  ,"input_label": { "message": "Input text" }
+  ,"status_copied_opening": { "message": "Text copied to clipboard — opening" }
+  ,"status_opened": { "message": "Opened" }
+  ,"options_title": { "message": "Send-to-AI — Settings" }
+  ,"options_subtitle": { "message": "Manage default settings, platforms, and prompt templates." }
+  ,"general_heading": { "message": "General" }
+  ,"default_translation_label": { "message": "Default translation language" }
+  ,"save_settings": { "message": "Save Settings" }
+  ,"reset_settings": { "message": "Reset to defaults" }
+  ,"platforms_heading": { "message": "Platforms (custom endpoints)" }
+  ,"add_platform": { "message": "Add Platform" }
+  ,"templates_heading": { "message": "Prompt Templates" }
+  ,"add_template": { "message": "Add Template" }
+  ,"settings_saved": { "message": "Settings saved" }
+  ,"confirm_reset": { "message": "Reset all settings and templates to defaults?" }
+  ,"settings_reset": { "message": "Settings reset to defaults" }
+  ,"modal_label_key": { "message": "Key" }
+  ,"modal_label_name": { "message": "Name" }
+  ,"modal_label_base_url": { "message": "Base URL" }
+  ,"modal_label_input_selector": { "message": "Message input selector" }
+  ,"modal_label_send_selector": { "message": "Send button selector" }
+  ,"modal_label_action": { "message": "Action" }
+  ,"modal_label_template_id": { "message": "Template ID" }
+  ,"modal_label_template_name": { "message": "Template Name" }
+  ,"modal_label_template_text": { "message": "Template Text" }
+  ,"modal_add_platform": { "message": "Add Platform" }
+  ,"modal_edit_platform": { "message": "Edit Platform" }
+  ,"modal_add_template": { "message": "Add Template" }
+  ,"modal_edit_template": { "message": "Edit Template" }
+  ,"edit_label": { "message": "Edit" }
+  ,"delete_label": { "message": "Delete" }
+  ,"delete_confirm_platform": { "message": "Delete platform?" }
+  ,"delete_confirm_template": { "message": "Delete template?" }
+  ,"validation_key_name_required": { "message": "Key and name required" }
+  ,"validation_action_id_name_required": { "message": "Action, id and name required" }
+  ,"changes_saved_note": { "message": "Changes are saved to extension storage. Use the extension context menu or popup to send selections to AI platforms." }
+  ,"platform_chatgpt": { "message": "ChatGPT" }
+  ,"platform_gemini": { "message": "Gemini" }
+  ,"platform_claude": { "message": "Claude" }
+  ,"platform_poe": { "message": "POE" }
+  ,"platform_perplexity": { "message": "Perplexity" }
+  ,"platform_deepseek": { "message": "DeepSeek" }
+  ,"action_answer": { "message": "Answer" }
+  ,"action_rewrite": { "message": "Rewrite" }
+  ,"action_translate": { "message": "Translate" }
+  ,"modal_save": { "message": "Save" }
+  ,"modal_cancel": { "message": "Cancel" }
+  ,"toast_yes": { "message": "Yes" }
+  ,"toast_no": { "message": "No" }
+  ,"tmpl_summarize": { "message": "Summarize" }
+  ,"tmpl_translate_vi": { "message": "Translate to Vietnamese" }
+  ,"tmpl_qa": { "message": "Ask questions" }
+}
