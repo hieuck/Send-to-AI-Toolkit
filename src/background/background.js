@@ -117,7 +117,10 @@ chrome.contextMenus.onClicked.addListener(async (info, tab)=>{
 
     // Fallback template if not found
     if(!template){
-      template = { id: 'default', name: chrome.i18n.getMessage('default_template_name'), text: (actionKey === 'translate') ? 'Translate to {{targetLang}}: {{selectedText}}' : '{{selectedText}}' };
+      const defaultText = (actionKey === 'translate')
+        ? chrome.i18n.getMessage('default_translate_template')
+        : '{{selectedText}}';
+      template = { id: 'default', name: chrome.i18n.getMessage('default_template_name'), text: defaultText };
     }
 
     // assemble prompt data

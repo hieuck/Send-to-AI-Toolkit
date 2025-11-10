@@ -57,10 +57,10 @@ function renderPlatforms(list){
   list.forEach((p, idx)=>{
     const div = document.createElement('div');
     div.className = 'list-item';
-    const name = p.name.startsWith('platform_') ? p.name : `platform_${p.name}`;
+    const name = p.name.startsWith('platform_') ? getMessage(p.name) : p.name;
     div.innerHTML = `
       <div class="list-item-details">
-        <div class="list-item-title">${getMessage(name)}</div>
+        <div class="list-item-title">${name}</div>
         <div class="list-item-desc">${p.url || ''}</div>
       </div>
       <div class="actions">
@@ -81,10 +81,11 @@ function renderTemplates(map){
     (map[action]||[]).forEach((t, idx)=>{
       const div = document.createElement('div');
       div.className = 'list-item';
+      const name = getMessage(t.name) || t.name;
       div.innerHTML = `
         <div class="list-item-details">
-          <div class="list-item-title">${getMessage(t.name)}</div>
-          <div class="list-item-desc">${getMessage('modal_label_action', 'Action')}: <strong>${action}</strong></div>
+          <div class="list-item-title">${name}</div>
+          <div class="list-item-desc">${getMessage('modal_label_action', 'Action')}: <strong>${getMessage('action_'+action, action)}</strong></div>
         </div>
         <div class="actions">
           <button data-action="${action}" data-idx="${idx}" class="editT secondary">${getMessage('edit_label', 'Edit')}</button>
@@ -165,7 +166,7 @@ async function init(){
       sections.forEach(s => s.classList.remove('active'));
       document.getElementById(targetId).classList.add('active');
 
-      contentTitle.textContent = item.textContent + ' ' + getMessage('settings_suffix', 'Settings');
+      contentTitle.textContent = getMessage(item.getAttribute('data-i18n')) + ' ' + getMessage('settings_suffix', 'Settings');
     });
   });
 
@@ -191,7 +192,7 @@ async function showModal(type, payload={}){
     pf.style.display = 'block';
     tf.style.display = 'none';
     const p = (payload.idx != null) ? store.platforms[payload.idx] : null;
-    document.getElementById('modalTitle').textContent = getMessage(p ? 'modal_edit_platform' : 'modal_add_platform', p ? 'Edit Platform' : 'Add Platform');
+    document.getElementById('modalTitle').textContent = getMessage(p ? 'modal_edit_platform' : 'modal_add_platform');
     document.getElementById('modal_platform_name').value = (p && p.name) || '';
     document.getElementById('modal_platform_url').value = (p && p.url) || '';
     document.getElementById('modal_platform_input_selector').value = (p && (p.inputSelector || p.input_selector)) || '';
@@ -200,7 +201,7 @@ async function showModal(type, payload={}){
     pf.style.display = 'none';
     tf.style.display = 'block';
     const t = (payload.idx != null && payload.action) ? store.templates[payload.action][payload.idx] : null;
-    document.getElementById('modalTitle').textContent = getMessage(t ? 'modal_edit_template' : 'modal_add_template', t ? 'Edit Template' : 'Add Template');
+    document.getElementById('modalTitle').textContent = getMessage(t ? 'modal_edit_template' : 'modal_add_template');
     document.getElementById('modal_template_action').value = payload.action || 'answer';
     document.getElementById('modal_template_name').value = (t && t.name) || '';
     document.getElementById('modal_template_text').value = (t && t.text) || '{{selectedText}}';

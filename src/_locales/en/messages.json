@@ -59,6 +59,8 @@
   "tmpl_translate_vi": { "message": "Translate to Vietnamese" },
   "tmpl_qa": { "message": "Ask questions" },
   "general_settings_heading": { "message": "General Settings" },
+  "lang_en": { "message": "English" },
+  "lang_vi": { "message": "Vietnamese" },
   "lang_english": { "message": "English" },
   "lang_vietnamese": { "message": "Vietnamese" },
   "lang_spanish": { "message": "Spanish" },
@@ -121,5 +123,6 @@
   "no_platforms_configured": { "message": "No platforms configured." },
   "no_templates_configured": { "message": "No templates configured." },
   "default_template_name": { "message": "Default" },
+  "default_translate_template": { "message": "Translate to {{targetLang}}: {{selectedText}}" },
   "settings_suffix": { "message": "Settings" }
 }
