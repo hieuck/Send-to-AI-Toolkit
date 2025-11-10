@@ -1,5 +1,5 @@
-import { PLATFORMS, ACTIONS, DEFAULT_TEMPLATES } from './menu.js';
-import { assemblePrompt, openPlatformWithPrompt } from './utils.js';
+import { PLATFORMS, ACTIONS, DEFAULT_TEMPLATES } from '../shared/menu.js';
+import { assemblePrompt, openPlatformWithPrompt } from '../shared/utils.js';
 
 // background service worker
 const ROOT_ID = 'send_to_ai_root';
@@ -28,7 +28,7 @@ async function buildContextMenus(){
     safeCreate({ id: ROOT_ID, title: 'Send to AI', contexts: ['selection','link'] });
 
     // Load user-defined platforms & templates from storage
-    const store = await chrome.storage.local.get({ platforms: [], templates: {}, settings: {} });
+    const store = await chrome.storage.sync.get({ platforms: [], templates: {}, settings: {} });
     const userPlatforms = store.platforms || [];
     const templates = Object.assign({}, DEFAULT_TEMPLATES, store.templates || {});
 
@@ -91,7 +91,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab)=>{
     const linkUrl = info.linkUrl || info.pageUrl || '';
 
     // load user data
-    const store = await chrome.storage.local.get({ platforms: [], templates: {}, settings: {} });
+    const store = await chrome.storage.sync.get({ platforms: [], templates: {}, settings: {} });
     const userPlatforms = store.platforms || [];
     const templates = Object.assign({}, DEFAULT_TEMPLATES, store.templates || {});
     const settings = store.settings || {};
