@@ -166,6 +166,7 @@ function init(){
 
   // Load initial data
   load();
+  initLocaleSwitcher();
 }
 
 
@@ -255,7 +256,7 @@ function initModal(){
           store.templates[editAction]?.splice(Number(editIdx), 1);
         }
       }
-      await chrome.storage.sync.set({templates: store.templates});
+      await chrome.storage.sync..set({templates: store.templates});
     }
     showToast(_getMsg('settings_saved', 'Changes saved'), { type: 'success' });
     hideModal();
@@ -266,6 +267,21 @@ function initModal(){
   document.getElementById('modalCancel').addEventListener('click', hideModal);
   document.getElementById('modalClose').addEventListener('click', hideModal);
   document.querySelector('#editorModal .modal-backdrop').addEventListener('click', hideModal);
+}
+
+async function initLocaleSwitcher(){
+  const selector = document.getElementById('locale-selector');
+  const store = await chrome.storage.sync.get({ settings: { locale: 'en' } });
+  const currentLocale = (store.settings && store.settings.locale) || 'en';
+  selector.value = currentLocale;
+  selector.addEventListener('change', async (e)=>{
+    const newLocale = e.target.value;
+    const store = await chrome.storage.sync.get(defaultState);
+    store.settings.locale = newLocale;
+    await chrome.storage.sync.set({ settings: store.settings });
+    // re-init page with new lang
+    window.location.reload();
+  });
 }
 
 // Initialize after DOM is ready

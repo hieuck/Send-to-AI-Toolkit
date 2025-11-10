@@ -1,4 +1,19 @@
 // i18n helper: replace elements with data-i18n and data-i18n-placeholder
+
+// Get current locale from storage, then apply translations
+async function initI18n(){
+  if(typeof chrome === 'undefined' || !chrome.i18n) return;
+
+  // Get locale from storage, fallback to browser lang, then 'en'
+  const store = await chrome.storage.sync.get({ settings: { locale: '' }});
+  let currentLocale = (store.settings && store.settings.locale) || chrome.i18n.getUILanguage().split('-')[0] || 'en';
+
+  // Set the lang attribute of the document
+  document.documentElement.lang = currentLocale;
+
+  applyI18n();
+}
+
 function applyI18n(){
   if(typeof chrome === 'undefined' || !chrome.i18n) return;
 
@@ -56,5 +71,5 @@ function applyI18n(){
   }
 }
 
-if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', applyI18n);
-else applyI18n();
+if(document.readyState === 'loading') document.addEventListener('DOMContentLoaded', initI18n);
+else initI18n();

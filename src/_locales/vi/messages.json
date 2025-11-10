@@ -48,6 +48,7 @@
   "platform_poe": { "message": "POE" },
   "platform_perplexity": { "message": "Perplexity" },
   "platform_deepseek": { "message": "DeepSeek" },
+  "platform_grok": { "message": "Grok" },
   "action_answer": { "message": "Trả lời" },
   "action_rewrite": { "message": "Viết lại" },
   "action_translate": { "message": "Dịch" },
