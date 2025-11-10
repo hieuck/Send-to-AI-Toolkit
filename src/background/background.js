@@ -45,11 +45,13 @@ async function buildContextMenus(){
         safeCreate({ id: aId, title: action.name, parentId: pId, contexts: ['selection','link'] });
 
         // templates under action
-        const tList = (templates[action.key] || []).slice(0,8); // limit for menu sanity
-        tList.forEach(t =>{
-          const tId = `template:${platform.key}|${action.key}|${t.id}`;
-          safeCreate({ id: tId, title: t.name, parentId: aId, contexts: ['selection','link'] });
-        });
+        if (templates && templates[action.key]) {
+          const tList = (templates[action.key] || []).slice(0,8); // limit for menu sanity
+          tList.forEach(t =>{
+            const tId = `template:${platform.key}|${action.key}|${t.id}`;
+            safeCreate({ id: tId, title: t.name, parentId: aId, contexts: ['selection','link'] });
+          });
+        }
 
         // allow a 'Custom...' entry
         const customId = `template:${platform.key}|${action.key}|_custom`;
@@ -101,8 +103,10 @@ chrome.contextMenus.onClicked.addListener(async (info, tab)=>{
 
     // find template
     let template = null;
-    const tList = templates[actionKey] || [];
-    template = tList.find(t=>t.id === templateId);
+    if (templates && templates[actionKey]) {
+      const tList = templates[actionKey] || [];
+      template = tList.find(t=>t.id === templateId);
+    }
 
     if(templateId === '_custom'){
       // Open a small prompt window to get custom template from user
