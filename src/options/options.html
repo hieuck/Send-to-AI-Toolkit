@@ -9,7 +9,7 @@
   <div class="options-container">
     <aside class="options-nav">
       <div class="logo-header">
-        <div class="logo">🤖</div>
+        <img src="../assets/icons/icon.svg" class="logo" alt="logo" />
         <h1 data-i18n="options_title">Send-to-AI</h1>
       </div>
       <nav>
@@ -21,7 +21,7 @@
 
     <main class="options-content">
       <header class="content-header">
-        <h2 id="content-title">General Settings</h2>
+        <h2 id="content-title" data-i18n="general_settings_heading">General Settings</h2>
         <p class="muted" data-i18n="options_subtitle">Manage default settings, platforms, and prompt templates.</p>
       </header>
 
@@ -29,42 +29,42 @@
         <div class="row">
           <label for="defaultLang" data-i18n="default_translation_label">Default translation language</label>
           <select id="defaultLang">
-            <option value="English">English</option>
-            <option value="Vietnamese">Vietnamese</option>
-            <option value="Spanish">Spanish</option>
-            <option value="French">French</option>
-            <option value="German">German</option>
-            <option value="Chinese (Simplified)">Chinese (Simplified)</option>
-            <option value="Chinese (Traditional)">Chinese (Traditional)</option>
-            <option value="Japanese">Japanese</option>
-            <option value="Korean">Korean</option>
-            <option value="Portuguese">Portuguese</option>
-            <option value="Russian">Russian</option>
-            <option value="Arabic">Arabic</option>
-            <option value="Hindi">Hindi</option>
-            <option value="Italian">Italian</option>
-            <option value="Dutch">Dutch</option>
-            <option value="Swedish">Swedish</option>
-            <option value="Norwegian">Norwegian</option>
-            <option value="Danish">Danish</option>
-            <option value="Finnish">Finnish</option>
-            <option value="Polish">Polish</option>
-            <option value="Czech">Czech</option>
-            <option value="Turkish">Turkish</option>
-            <option value="Indonesian">Indonesian</option>
-            <option value="Thai">Thai</option>
-            <option value="Malay">Malay</option>
-            <option value="Hebrew">Hebrew</option>
-            <option value="Greek">Greek</option>
-            <option value="Hungarian">Hungarian</option>
-            <option value="Romanian">Romanian</option>
-            <option value="Bulgarian">Bulgarian</option>
-            <option value="Slovak">Slovak</option>
-            <option value="Lithuanian">Lithuanian</option>
-            <option value="Latvian">Latvian</option>
-            <option value="Estonian">Estonian</option>
-            <option value="Ukrainian">Ukrainian</option>
-            <option value="Catalan">Catalan</option>
+            <option value="English" data-i18n="lang_english">English</option>
+            <option value="Vietnamese" data-i18n="lang_vietnamese">Vietnamese</option>
+            <option value="Spanish" data-i18n="lang_spanish">Spanish</option>
+            <option value="French" data-i18n="lang_french">French</option>
+            <option value="German" data-i18n="lang_german">German</option>
+            <option value="Chinese (Simplified)" data-i18n="lang_chinese_simplified">Chinese (Simplified)</option>
+            <option value="Chinese (Traditional)" data-i18n="lang_chinese_traditional">Chinese (Traditional)</option>
+            <option value="Japanese" data-i18n="lang_japanese">Japanese</option>
+            <option value="Korean" data-i18n="lang_korean">Korean</option>
+            <option value="Portuguese" data-i18n="lang_portuguese">Portuguese</option>
+            <option value="Russian" data-i18n="lang_russian">Russian</option>
+            <option value="Arabic" data-i18n="lang_arabic">Arabic</option>
+            <option value="Hindi" data-i18n="lang_hindi">Hindi</option>
+            <option value="Italian" data-i18n="lang_italian">Italian</option>
+            <option value="Dutch" data-i18n="lang_dutch">Dutch</option>
+            <option value="Swedish" data-i18n="lang_swedish">Swedish</option>
+            <option value="Norwegian" data-i18n="lang_norwegian">Norwegian</option>
+            <option value="Danish" data-i18n="lang_danish">Danish</option>
+            <option value="Finnish" data-i18n="lang_finnish">Finnish</option>
+            <option value="Polish" data-i18n="lang_polish">Polish</option>
+            <option value="Czech" data-i18n="lang_czech">Czech</option>
+            <option value="Turkish" data-i18n="lang_turkish">Turkish</option>
+            <option value="Indonesian" data-i18n="lang_indonesian">Indonesian</option>
+            <option value="Thai" data-i18n="lang_thai">Thai</option>
+            <option value="Malay" data-i18n="lang_malay">Malay</option>
+            <option value="Hebrew" data-i18n="lang_hebrew">Hebrew</option>
+            <option value="Greek" data-i18n="lang_greek">Greek</option>
+            <option value="Hungarian" data-i18n="lang_hungarian">Hungarian</option>
+            <option value="Romanian" data-i18n="lang_romanian">Romanian</option>
+            <option value="Bulgarian" data-i18n="lang_bulgarian">Bulgarian</option>
+            <option value="Slovak" data-i18n="lang_slovak">Slovak</option>
+            <option value="Lithuanian" data-i18n="lang_lithuanian">Lithuanian</option>
+            <option value="Latvian" data-i18n="lang_latvian">Latvian</option>
+            <option value="Estonian" data-i18n="lang_estonian">Estonian</option>
+            <option value="Ukrainian" data-i18n="lang_ukrainian">Ukrainian</option>
+            <option value="Catalan" data-i18n="lang_catalan">Catalan</option>
           </select>
         </div>
         <div class="row actions">
@@ -106,15 +106,15 @@
     <div class="modal-backdrop"></div>
     <div class="modal-content" role="document">
       <div class="modal-header">
-        <h3 id="modalTitle">Edit</h3>
+        <h3 id="modalTitle" data-i18n="modal_title_edit">Edit</h3>
         <button id="modalClose" class="icon-btn">&times;</button>
       </div>
       <form id="modalForm">
         <div id="platformFields" class="hidden">
           <label><span class="i18n-label" data-i18n="modal_label_name">Name</span><input id="modal_platform_name" name="platform_name" required /></label>
-          <label><span class="i18n-label" data-i18n="modal_label_base_url">Base URL</span><input type="url" id="modal_platform_url" name="platform_url" placeholder="https://..." /></label>
-          <label><span class="i18n-label" data-i18n="modal_label_input_selector">Message input selector</span><input id="modal_platform_input_selector" name="platform_input_selector" placeholder="e.g. textarea, div[contenteditable=true]" /></label>
-          <label><span class="i18n-label" data-i18n="modal_label_send_selector">Send button selector</span><input id="modal_platform_send_selector" name="platform_send_selector" placeholder="e.g. button[aria-label=Send]" /></label>
+          <label><span class="i18n-label" data-i18n="modal_label_base_url">Base URL</span><input type="url" id="modal_platform_url" name="platform_url" data-i18n-placeholder="modal_placeholder_url" /></label>
+          <label><span class="i18n-label" data-i18n="modal_label_input_selector">Message input selector</span><input id="modal_platform_input_selector" name="platform_input_selector" data-i18n-placeholder="modal_placeholder_input_selector" /></label>
+          <label><span class="i18n-label" data-i18n="modal_label_send_selector">Send button selector</span><input id="modal_platform_send_selector" name="platform_send_selector" data-i18n-placeholder="modal_placeholder_send_selector" /></label>
         </div>
 
         <div id="templateFields" class="hidden">

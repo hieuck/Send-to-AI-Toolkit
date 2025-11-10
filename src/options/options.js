@@ -84,7 +84,7 @@ function renderTemplates(map){
       div.innerHTML = `
         <div class="list-item-details">
           <div class="list-item-title">${t.name}</div>
-          <div class="list-item-desc">Action: <strong>${action}</strong></div>
+          <div class="list-item-desc">${_getMsg('modal_label_action', 'Action')}: <strong>${action}</strong></div>
         </div>
         <div class="actions">
           <button data-action="${action}" data-idx="${idx}" class="editT secondary">${_getMsg('edit_label', 'Edit')}</button>
@@ -185,7 +185,7 @@ async function showModal(type, payload={}){
     pf.style.display = 'block';
     tf.style.display = 'none';
     const p = (payload.idx != null) ? store.platforms[payload.idx] : null;
-    document.getElementById('modalTitle').textContent = _getMsg(p ? 'modal_edit_platform' : 'modal_add_platform');
+    document.getElementById('modalTitle').textContent = _getMsg(p ? 'modal_edit_platform' : 'modal_add_platform', p ? 'Edit Platform' : 'Add Platform');
     document.getElementById('modal_platform_name').value = (p && p.name) || '';
     document.getElementById('modal_platform_url').value = (p && p.url) || '';
     document.getElementById('modal_platform_input_selector').value = (p && (p.inputSelector || p.input_selector)) || '';
@@ -194,7 +194,7 @@ async function showModal(type, payload={}){
     pf.style.display = 'none';
     tf.style.display = 'block';
     const t = (payload.idx != null && payload.action) ? store.templates[payload.action][payload.idx] : null;
-    document.getElementById('modalTitle').textContent = _getMsg(t ? 'modal_edit_template' : 'modal_add_template');
+    document.getElementById('modalTitle').textContent = _getMsg(t ? 'modal_edit_template' : 'modal_add_template', t ? 'Edit Template' : 'Add Template');
     document.getElementById('modal_template_action').value = payload.action || 'answer';
     document.getElementById('modal_template_name').value = (t && t.name) || '';
     document.getElementById('modal_template_text').value = (t && t.text) || '{{selectedText}}';

@@ -25,7 +25,7 @@ async function buildContextMenus(){
       }catch(e){ console.warn('contextMenus.create threw', e, opts && opts.id); }
     };
 
-    safeCreate({ id: ROOT_ID, title: 'Send to AI', contexts: ['selection','link'] });
+    safeCreate({ id: ROOT_ID, title: chrome.i18n.getMessage('extension_name'), contexts: ['selection','link'], icons: { '16': 'src/assets/icons/icon.svg' } });
 
     // Load user-defined platforms & templates from storage
     const store = await chrome.storage.sync.get({ platforms: [], templates: {}, settings: {} });
@@ -37,31 +37,31 @@ async function buildContextMenus(){
     // For each platform create menu
     allPlatforms.forEach(platform =>{
       const pId = `platform:${platform.key}`;
-      safeCreate({ id: pId, title: platform.name, parentId: ROOT_ID, contexts: ['selection','link'] });
+      safeCreate({ id: pId, title: chrome.i18n.getMessage(platform.name) || platform.name, parentId: ROOT_ID, contexts: ['selection','link'], icons: { '16': platform.icon } });
 
       // actions under platform
       ACTIONS.forEach(action =>{
         const aId = `action:${platform.key}|${action.key}`;
-        safeCreate({ id: aId, title: action.name, parentId: pId, contexts: ['selection','link'] });
+        safeCreate({ id: aId, title: chrome.i18n.getMessage(action.name) || action.name, parentId: pId, contexts: ['selection','link'], icons: { '16': action.icon } });
 
         // templates under action
         if (templates && templates[action.key]) {
           const tList = (templates[action.key] || []).slice(0,8); // limit for menu sanity
           tList.forEach(t =>{
             const tId = `template:${platform.key}|${action.key}|${t.id}`;
-            safeCreate({ id: tId, title: t.name, parentId: aId, contexts: ['selection','link'] });
+            safeCreate({ id: tId, title: chrome.i18n.getMessage(t.name) || t.name, parentId: aId, contexts: ['selection','link'] });
           });
         }
 
         // allow a 'Custom...' entry
         const customId = `template:${platform.key}|${action.key}|_custom`;
-        safeCreate({ id: customId, title: 'Custom template...', parentId: aId, contexts: ['selection','link'] });
+        safeCreate({ id: customId, title: chrome.i18n.getMessage('custom_template_menu'), parentId: aId, contexts: ['selection','link'] });
       });
     });
 
     // fallback if no platform
     if(allPlatforms.length === 0){
-      safeCreate({ id: 'no_platform', title: 'No platforms configured - open options', parentId: ROOT_ID, contexts: ['selection','link'] });
+      safeCreate({ id: 'no_platform', title: chrome.i18n.getMessage('no_platforms_configured'), parentId: ROOT_ID, contexts: ['selection','link'] });
     }
   }finally{
     _buildingMenus = false;
@@ -85,7 +85,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab)=>{
   // parse ids
   // template:<platformKey>|<actionKey>|<templateId>
   if(typeof id === 'string' && id.startsWith('template:')){
-    const payload = id.replace('template:','');
+    const payload = id.replace('template:', '');
     const [platformKey, actionKey, templateId] = payload.split('|');
 
     // get selection or link. Prioritize selection, fallback to link
@@ -117,7 +117,7 @@ chrome.contextMenus.onClicked.addListener(async (info, tab)=>{
 
     // Fallback template if not found
     if(!template){
-      template = { id: 'default', name: 'Default', text: (actionKey === 'translate') ? 'Translate to {{targetLang}}: {{selectedText}}' : '{{selectedText}}' };
+      template = { id: 'default', name: chrome.i18n.getMessage('default_template_name'), text: (actionKey === 'translate') ? 'Translate to {{targetLang}}: {{selectedText}}' : '{{selectedText}}' };
     }
 
     // assemble prompt data

@@ -1,13 +1,13 @@
 {
   "manifest_version": 3,
-  "name": "Send-to-AI",
-  "description": "Send selected text or links to various AI platforms (ChatGPT, Gemini, Claude, POE, DeepSeek, Perplexity) with templated prompts.",
+  "name": "__MSG_extension_name__",
+  "description": "__MSG_extension_description__",
   "version": "0.1.0",
   "default_locale": "vi",
   "icons": {
-    "16": "src/assets/icons/icon16.svg",
-    "48": "src/assets/icons/icon48.svg",
-    "128": "src/assets/icons/icon128.svg"
+    "16": "src/assets/icons/icon.svg",
+    "48": "src/assets/icons/icon.svg",
+    "128": "src/assets/icons/icon.svg"
   },
   "permissions": [
     "contextMenus",
@@ -23,20 +23,22 @@
   "action": {
     "default_popup": "src/popup/popup.html",
     "default_icon": {
-      "16": "src/assets/icons/icon16.svg",
-      "48": "src/assets/icons/icon48.svg"
+      "16": "src/assets/icons/icon.svg",
+      "48": "src/assets/icons/icon.svg"
     }
   },
   "options_page": "src/options/options.html",
   "content_scripts": [
     {
       "matches": [
+        "https://chatgpt.com/*",
         "https://chat.openai.com/*",
         "https://*.openai.com/*",
         "https://*.google.com/*",
         "https://perplexity.ai/*",
         "https://poe.com/*",
-        "https://*.claude.ai/*"
+        "https://*.claude.ai/*",
+        "https://grok.com/*"
       ],
       "js": ["src/content/content.js"],
       "run_at": "document_idle"
@@ -45,7 +47,8 @@
   "web_accessible_resources": [
     {
       "resources": [
-        "_locales/*"
+        "_locales/*",
+        "src/assets/icons/*"
       ],
       "matches": [
         "<all_urls>"
