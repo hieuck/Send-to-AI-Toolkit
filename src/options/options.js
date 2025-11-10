@@ -178,34 +178,39 @@ async function init(){
 
 /* --- Modal editor implementation --- */
 async function showModal(type, payload={}){
-  const modal = document.getElementById('editorModal');
-  modal.dataset.mode = type;
-  modal.dataset.editIdx = payload.idx != null ? String(payload.idx) : '';
-  modal.dataset.editAction = payload.action || '';
-  modal.classList.remove('hidden');
+    const modal = document.getElementById('editorModal');
+    modal.dataset.mode = type;
+    modal.dataset.editIdx = payload.idx != null ? String(payload.idx) : '';
+    modal.dataset.editAction = payload.action || '';
+    modal.classList.remove('hidden');
 
-  const store = await chrome.storage.sync.get(defaultState);
-  const pf = document.getElementById('platformFields');
-  const tf = document.getElementById('templateFields');
+    const store = await chrome.storage.sync.get(defaultState);
+    const pf = document.getElementById('platformFields');
+    const tf = document.getElementById('templateFields');
+    const nameInput = document.getElementById('modal_platform_name');
 
-  if(type === 'platform'){
-    pf.style.display = 'block';
-    tf.style.display = 'none';
-    const p = (payload.idx != null) ? store.platforms[payload.idx] : null;
-    document.getElementById('modalTitle').textContent = getMessage(p ? 'modal_edit_platform' : 'modal_add_platform');
-    document.getElementById('modal_platform_name').value = (p && p.name) || '';
-    document.getElementById('modal_platform_url').value = (p && p.url) || '';
-    document.getElementById('modal_platform_input_selector').value = (p && (p.inputSelector || p.input_selector)) || '';
-    document.getElementById('modal_platform_send_selector').value = (p && (p.sendSelector || p.send_selector)) || '';
-  } else { // template
-    pf.style.display = 'none';
-    tf.style.display = 'block';
-    const t = (payload.idx != null && payload.action) ? store.templates[payload.action][payload.idx] : null;
-    document.getElementById('modalTitle').textContent = getMessage(t ? 'modal_edit_template' : 'modal_add_template');
-    document.getElementById('modal_template_action').value = payload.action || 'answer';
-    document.getElementById('modal_template_name').value = (t && t.name) || '';
-    document.getElementById('modal_template_text').value = (t && t.text) || '{{selectedText}}';
-  }
+    if (type === 'platform') {
+        pf.style.display = 'block';
+        tf.style.display = 'none';
+        const p = (payload.idx != null) ? store.platforms[payload.idx] : null;
+        document.getElementById('modalTitle').textContent = getMessage(p ? 'modal_edit_platform' : 'modal_add_platform');
+        
+        const isDefaultPlatform = p && p.name.startsWith('platform_');
+        nameInput.value = isDefaultPlatform ? getMessage(p.name) : (p ? p.name : '');
+        nameInput.disabled = isDefaultPlatform;
+
+        document.getElementById('modal_platform_url').value = (p && p.url) || '';
+        document.getElementById('modal_platform_input_selector').value = (p && (p.inputSelector || p.input_selector)) || '';
+        document.getElementById('modal_platform_send_selector').value = (p && (p.sendSelector || p.send_selector)) || '';
+    } else { // template
+        pf.style.display = 'none';
+        tf.style.display = 'block';
+        const t = (payload.idx != null && payload.action) ? store.templates[payload.action][payload.idx] : null;
+        document.getElementById('modalTitle').textContent = getMessage(t ? 'modal_edit_template' : 'modal_add_template');
+        document.getElementById('modal_template_action').value = payload.action || 'answer';
+        document.getElementById('modal_template_name').value = (t && t.name) || '';
+        document.getElementById('modal_template_text').value = (t && t.text) || '{{selectedText}}';
+    }
 }
 
 function hideModal(){
@@ -226,13 +231,18 @@ function initModal(){
       let platform;
       if (editIdx !== '') {
         platform = store.platforms[Number(editIdx)];
+        // Only update name if it's not a default platform
+        if (!platform.name.startsWith('platform_')) {
+            platform.name = name;
+        }
       } else {
         platform = {
           key: name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') + '_' + Date.now().toString(36).slice(-4)
         };
         store.platforms.push(platform);
+        platform.name = name;
       }
-      platform.name = name;
+      
       platform.url = document.getElementById('modal_platform_url').value.trim();
       platform.inputSelector = document.getElementById('modal_platform_input_selector').value.trim();
       platform.sendSelector = document.getElementById('modal_platform_send_selector').value.trim();
