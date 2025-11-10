@@ -37,7 +37,7 @@ function renderPlatforms(platforms) {
     const btn = document.createElement('button');
     btn.className = 'platform-item';
     const name = p.name.startsWith('platform_') ? p.name : `platform_${p.name}`;
-    btn.innerHTML = `<img src="/src/assets/icons/platforms/${p.name}.svg" alt="${getMsg(name)}" /><span>${getMsg(name)}</span>`;
+    btn.textContent = getMsg(name);
     btn.addEventListener('click', () => {
       const input = document.getElementById('inputText').value.trim();
       openPlatform(p, input);
