@@ -275,29 +275,30 @@ function initModal(){
 }
 
 async function initLocaleSwitcher(){
-  const locales = ['en', 'vi'];
-  const selector = document.getElementById('locale-selector');
-  selector.innerHTML = '';
-  locales.forEach(locale => {
-    const option = document.createElement('option');
-    option.value = locale;
-    option.textContent = getMessage(`lang_${locale}`);
-    selector.appendChild(option)
-  });
+    const switcher = document.getElementById('locale-switcher');
+    const icon = switcher.querySelector('.icon');
+    const label = switcher.querySelector('.label');
 
-  const store = await chrome.storage.sync.get(defaultState);
-  const currentLocale = (store.settings && store.settings.locale) || 'en';
-  selector.value = currentLocale;
-  selector.addEventListener('change', async (e)=>{
-    const newLocale = e.target.value;
     const store = await chrome.storage.sync.get(defaultState);
-    store.settings.locale = newLocale;
-    await chrome.storage.sync.set({ settings: store.settings });
-    // re-init page with new lang
-    await fetchMessages(newLocale);
-    localizePage();
-    load(); // Re-render lists with new translations
-  });
+    let currentLocale = store.settings.locale || 'en';
+
+    function updateUI() {
+        icon.textContent = currentLocale === 'en' ? '🇻🇳' : '🇬🇧';
+        label.textContent = getMessage(`lang_${currentLocale}`);
+        localizePage();
+        load(); 
+    }
+
+    switcher.addEventListener('click', async () => {
+        currentLocale = currentLocale === 'en' ? 'vi' : 'en';
+        const store = await chrome.storage.sync.get(defaultState);
+        store.settings.locale = currentLocale;
+        await chrome.storage.sync.set({ settings: store.settings });
+        await fetchMessages(currentLocale);
+        updateUI();
+    });
+
+    updateUI();
 }
 
 // Initialize after DOM is ready

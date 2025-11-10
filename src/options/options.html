@@ -21,17 +21,17 @@
 
     <main class="options-content">
       <header class="content-header">
-        <h2 id="content-title" data-i18n="general_settings_heading">General Settings</h2>
-        <div class="locale-switcher">
-          <select id="locale-selector">
-            <option value="en">English</option>
-            <option value="vi">Vietnamese</option>
-          </select>
+        <div>
+          <h2 id="content-title" data-i18n="general_settings_heading">General Settings</h2>
+          <p class="muted" data-i18n="options_subtitle">Manage default settings, platforms, and prompt templates.</p>
         </div>
+        <button id="locale-switcher" class="locale-switcher-toggle">
+          <span class="icon"></span>
+          <span class="label"></span>
+        </button>
       </header>
 
       <section id="general" class="content-section card active">
-        <p class="muted" data-i18n="options_subtitle">Manage default settings, platforms, and prompt templates.</p>
         <div class="row">
           <label for="defaultLang" data-i18n="default_translation_label">Default translation language</label>
           <select id="defaultLang">
