@@ -2,7 +2,7 @@
   "extension_name": { "message": "Gửi tới AI" },
   "extension_description": { "message": "Gửi văn bản hoặc liên kết đã chọn đến các nền tảng AI với các mẫu lời nhắc." },
   "open_settings": { "message": "Cài đặt" },
-  "popup_placeholder": { "message": "Dán hoặc gõ văn bản vào đây, hoặc chọn văn bản trên trang và sử dụng menu ngữ cảnh..." },
+  "popup_placeholder": { "message": "Dán hoặc gõ văn bản vào đây..." },
   "choose_template": { "message": "-- Chọn mẫu --" },
   "clear": { "message": "Xóa" },
   "input_label": { "message": "Nhập văn bản" },
@@ -125,5 +125,7 @@
   "no_templates_configured": { "message": "Chưa có mẫu nào được định cấu hình." },
   "default_template_name": { "message": "Mặc định" },
   "default_translate_template": { "message": "Dịch sang {{targetLang}}: {{selectedText}}" },
-  "settings_suffix": { "message": "Cài đặt" }
+  "settings_suffix": { "message": "Cài đặt" },
+  "popup_select_platform": { "message": "1. Chọn một nền tảng" },
+  "popup_select_action": { "message": "2. Chọn một hành động" }
 }

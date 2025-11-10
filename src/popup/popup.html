@@ -17,24 +17,21 @@
       <label for="inputText" class="sr-only" data-i18n="input_label">Input text</label>
       <textarea id="inputText" data-i18n-placeholder="popup_placeholder" rows="5"></textarea>
 
-      <div id="actionButtons" class="action-buttons"></div>
+      <div class="steps">
+        <div class="step">
+          <h2 class="step-title" data-i18n="popup_select_platform">1. Select a platform</h2>
+          <div id="platformGrid" class="platform-grid" role="radiogroup"></div>
+        </div>
 
-      <div id="platformGrid" class="platform-grid" role="list">
-        <!-- Platforms will be dynamically loaded here -->
-      </div>
-
-      <div class="footer-row">
-        <select id="templateSelect">
-          <option value="" data-i18n="choose_template">-- Choose template --</option>
-          <!-- Templates will be dynamically loaded here -->
-        </select>
-        <button id="clearBtn" class="secondary" data-i18n="clear">Clear</button>
+        <div class="step">
+          <h2 class="step-title" data-i18n="popup_select_action">2. Select an action</h2>
+          <div id="actionContainer" class="action-container"></div>
+        </div>
       </div>
 
       <div id="status" class="status" aria-live="polite"></div>
     </div>
     
-    <!-- Load scripts as modules -->
     <script type="module" src="popup.js"></script>
 </body>
 </html>
