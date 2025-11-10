@@ -256,7 +256,7 @@ function initModal(){
           store.templates[editAction]?.splice(Number(editIdx), 1);
         }
       }
-      await chrome.storage.sync..set({templates: store.templates});
+      await chrome.storage.sync.set({templates: store.templates});
     }
     showToast(_getMsg('settings_saved', 'Changes saved'), { type: 'success' });
     hideModal();
