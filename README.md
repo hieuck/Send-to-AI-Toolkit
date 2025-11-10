@@ -1,6 +1,6 @@
 # Send-to-AI
 
-Send-to-AI is a Chrome extension that lets you quickly send selected text or links from any webpage to a variety of AI platforms (ChatGPT, Gemini, Claude, POE, DeepSeek, Perplexity) for actions like answering, rewriting, or translating.
+Send-to-AI is a Chrome extension that lets you quickly send selected text or links from any webpage to a variety of AI platforms for actions like answering, rewriting, or translating.
 
 ## Features
 
@@ -47,7 +47,6 @@ Open the extension popup and click "Open settings" or go to `chrome://extensions
 - Better platform-specific filling logic and official APIs where available
 
 ## Developer notes
-
 - Background is a Manifest V3 service worker (module). Context menus are rebuilt from storage and defaults.
 - Templates are simple mustache-like keys ({{selectedText}}, {{url}}, {{targetLang}}).
 

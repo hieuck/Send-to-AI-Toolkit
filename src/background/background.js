@@ -37,7 +37,7 @@ async function buildContextMenus(){
     // For each platform create menu
     allPlatforms.forEach(platform =>{
       const pId = `platform:${platform.key}`;
-      safeCreate({ id: pId, title: chrome.i18n.getMessage(platform.name) || platform.name, parentId: ROOT_ID, contexts: ['selection','link'], icons: { '16': platform.icon } });
+      safeCreate({ id: pId, title: chrome.i18n.getMessage(platform.name) || platform.name, parentId: ROOT_ID, contexts: ['selection','link']});
 
       // actions under platform
       ACTIONS.forEach(action =>{

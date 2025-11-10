@@ -55,12 +55,13 @@ function renderPlatforms(list){
   const container = document.getElementById('platformList');
   container.innerHTML = '';
   if(!list || list.length === 0){ container.innerHTML = `<p class="muted">${_getMsg('no_platforms_configured', 'No platforms configured.')}</p>`; return; }
-  list.forEach((p, idx)=>{
+  list.forEach((p, idx)=>{{
     const div = document.createElement('div');
     div.className = 'list-item';
+    const name = p.name.startsWith('platform_') ? p.name : `platform_${p.name}`;
     div.innerHTML = `
       <div class="list-item-details">
-        <div class="list-item-title">${p.name}</div>
+        <div class="list-item-title">${_getMsg(name)}</div>
         <div class="list-item-desc">${p.url || ''}</div>
       </div>
       <div class="actions">
@@ -68,7 +69,7 @@ function renderPlatforms(list){
         <button data-idx="${idx}" class="del secondary">${_getMsg('delete_label', 'Delete')}</button>
       </div>`;
     container.appendChild(div);
-  });
+  }});
   container.querySelectorAll('button.edit').forEach(b=>b.addEventListener('click', onEditPlatform));
   container.querySelectorAll('button.del').forEach(b=>b.addEventListener('click', onDeletePlatform));
 }
@@ -77,13 +78,13 @@ function renderTemplates(map){
   const container = document.getElementById('templateList');
   container.innerHTML = '';
   if(!map || Object.keys(map).length === 0){ container.innerHTML = `<p class="muted">${_getMsg('no_templates_configured', 'No templates configured.')}</p>`; return; }
-  for(const action of Object.keys(map)){
-    (map[action]||[]).forEach((t, idx)=>{
+  for(const action of Object.keys(map)){{
+    (map[action]||[]).forEach((t, idx)=>{{
       const div = document.createElement('div');
       div.className = 'list-item';
       div.innerHTML = `
         <div class="list-item-details">
-          <div class="list-item-title">${t.name}</div>
+          <div class="list-item-title">${_getMsg(t.name)}</div>
           <div class="list-item-desc">${_getMsg('modal_label_action', 'Action')}: <strong>${action}</strong></div>
         </div>
         <div class="actions">
@@ -91,15 +92,15 @@ function renderTemplates(map){
           <button data-action="${action}" data-idx="${idx}" class="delT secondary">${_getMsg('delete_label', 'Delete')}</button>
         </div>`;
       container.appendChild(div);
-    });
-  }
+    }});
+  }}
   container.querySelectorAll('button.editT').forEach(b=>b.addEventListener('click', onEditTemplate));
   container.querySelectorAll('button.delT').forEach(b=>b.addEventListener('click', onDeleteTemplate));
 }
 
 /* --- Event Handlers --- */
-async function onEditPlatform(e){ showModal('platform', { idx: Number(e.target.dataset.idx) }); }
-async function onEditTemplate(e){ showModal('template', { action: e.target.dataset.action, idx: Number(e.target.dataset.idx) }); }
+async function onEditPlatform(e){{ showModal('platform', { idx: Number(e.target.dataset.idx) }); }}
+async function onEditTemplate(e){{ showModal('template', { action: e.target.dataset.action, idx: Number(e.target.dataset.idx) }); }}
 
 async function onDeletePlatform(e){
   const idx = Number(e.target.dataset.idx);
@@ -171,7 +172,7 @@ function init(){
 
 
 /* --- Modal editor implementation --- */
-async function showModal(type, payload={}){
+async function showModal(type, payload={}){{
   const modal = document.getElementById('editorModal');
   modal.dataset.mode = type;
   modal.dataset.editIdx = payload.idx != null ? String(payload.idx) : '';
@@ -182,7 +183,7 @@ async function showModal(type, payload={}){
   const pf = document.getElementById('platformFields');
   const tf = document.getElementById('templateFields');
 
-  if(type === 'platform'){
+  if(type === 'platform'){{
     pf.style.display = 'block';
     tf.style.display = 'none';
     const p = (payload.idx != null) ? store.platforms[payload.idx] : null;
@@ -191,7 +192,7 @@ async function showModal(type, payload={}){
     document.getElementById('modal_platform_url').value = (p && p.url) || '';
     document.getElementById('modal_platform_input_selector').value = (p && (p.inputSelector || p.input_selector)) || '';
     document.getElementById('modal_platform_send_selector').value = (p && (p.sendSelector || p.send_selector)) || '';
-  } else { // template
+  }} else {{ // template
     pf.style.display = 'none';
     tf.style.display = 'block';
     const t = (payload.idx != null && payload.action) ? store.templates[payload.action][payload.idx] : null;
@@ -199,8 +200,8 @@ async function showModal(type, payload={}){
     document.getElementById('modal_template_action').value = payload.action || 'answer';
     document.getElementById('modal_template_name').value = (t && t.name) || '';
     document.getElementById('modal_template_text').value = (t && t.text) || '{{selectedText}}';
-  }
-}
+  }}
+}}
 
 function hideModal(){
   const modal = document.getElementById('editorModal');
@@ -213,55 +214,55 @@ function initModal(){
     const { mode, editIdx, editAction } = modal.dataset;
     const store = await chrome.storage.sync.get(defaultState);
 
-    if(mode === 'platform'){
+    if(mode === 'platform'){{
       const name = document.getElementById('modal_platform_name').value.trim();
-      if (!name) { showToast(_getMsg('validation_name_required', 'Name is required.'), { type: 'error' }); return; }
+      if (!name) {{ showToast(_getMsg('validation_name_required', 'Name is required.'), {{ type: 'error' }}); return; }}
 
       let platform;
-      if (editIdx !== '') {
+      if (editIdx !== '') {{
         platform = store.platforms[Number(editIdx)];
-      } else {
-        platform = {
+      }} else {{
+        platform = {{
           key: name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') + '_' + Date.now().toString(36).slice(-4)
-        };
+        }};
         store.platforms.push(platform);
-      }
+      }}
       platform.name = name;
       platform.url = document.getElementById('modal_platform_url').value.trim();
       platform.inputSelector = document.getElementById('modal_platform_input_selector').value.trim();
       platform.sendSelector = document.getElementById('modal_platform_send_selector').value.trim();
 
       await chrome.storage.sync.set({platforms: store.platforms});
-    } else if(mode === 'template'){
+    }} else if(mode === 'template'){{
       const name = document.getElementById('modal_template_name').value.trim();
       const action = document.getElementById('modal_template_action').value;
-      if (!name) { showToast(_getMsg('validation_name_required', 'Name is required.'), { type: 'error' }); return; }
+      if (!name) {{ showToast(_getMsg('validation_name_required', 'Name is required.'), {{ type: 'error' }}); return; }}
 
       const templateText = document.getElementById('modal_template_text').value;
       let template;
 
-      if (editIdx !== '' && editAction === action) {
+      if (editIdx !== '' && editAction === action) {{
         template = store.templates[action][Number(editIdx)];
         template.name = name;
         template.text = templateText;
-      } else {
-        template = {
+      }} else {{
+        template = {{
           id: name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') + '_' + Date.now().toString(36).slice(-4),
           name: name,
           text: templateText
-        };
+        }};
         store.templates[action] = store.templates[action] || [];
         store.templates[action].push(template);
-        if (editIdx !== '' && editAction !== action) {
+        if (editIdx !== '' && editAction !== action) {{
           store.templates[editAction]?.splice(Number(editIdx), 1);
-        }
-      }
+        }}
+      }}
       await chrome.storage.sync.set({templates: store.templates});
-    }
+    }}
     showToast(_getMsg('settings_saved', 'Changes saved'), { type: 'success' });
     hideModal();
     load();
-  });
+  }});
 
   // General modal close handlers
   document.getElementById('modalCancel').addEventListener('click', hideModal);
@@ -270,7 +271,16 @@ function initModal(){
 }
 
 async function initLocaleSwitcher(){
+  const locales = ['en', 'vi'];
   const selector = document.getElementById('locale-selector');
+  selector.innerHTML = '';
+  locales.forEach(locale => {
+    const option = document.createElement('option');
+    option.value = locale;
+    option.textContent = _getMsg(`lang_${locale}`);
+    selector.appendChild(option)
+  });
+
   const store = await chrome.storage.sync.get({ settings: { locale: 'en' } });
   const currentLocale = (store.settings && store.settings.locale) || 'en';
   selector.value = currentLocale;
