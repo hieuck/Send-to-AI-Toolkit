@@ -1,3 +1,1 @@
-node_modules
-dist
 git pull && npm install && npm run build
