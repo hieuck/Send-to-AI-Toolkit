@@ -61,7 +61,7 @@ function renderPlatforms(list){
     div.innerHTML = `
       <div class="list-item-details">
         <div class="list-item-title">${p.name}</div>
-        <div class="list-item-desc"><code>${p.key}</code> &middot; ${p.url || ''}</div>
+        <div class="list-item-desc">${p.url || ''}</div>
       </div>
       <div class="actions">
         <button data-idx="${idx}" class="edit secondary">${_getMsg('edit_label', 'Edit')}</button>
@@ -84,7 +84,7 @@ function renderTemplates(map){
       div.innerHTML = `
         <div class="list-item-details">
           <div class="list-item-title">${t.name}</div>
-          <div class="list-item-desc">Action: <strong>${action}</strong> &middot; ID: <code>${t.id}</code></div>
+          <div class="list-item-desc">Action: <strong>${action}</strong></div>
         </div>
         <div class="actions">
           <button data-action="${action}" data-idx="${idx}" class="editT secondary">${_getMsg('edit_label', 'Edit')}</button>
@@ -186,7 +186,6 @@ async function showModal(type, payload={}){
     tf.classList.add('hidden');
     const p = (payload.idx != null) ? store.platforms[payload.idx] : null;
     document.getElementById('modalTitle').textContent = _getMsg(p ? 'modal_edit_platform' : 'modal_add_platform');
-    document.getElementById('modal_platform_key').value = (p && p.key) || '';
     document.getElementById('modal_platform_name').value = (p && p.name) || '';
     document.getElementById('modal_platform_url').value = (p && p.url) || '';
     document.getElementById('modal_platform_input_selector').value = (p && (p.inputSelector || p.input_selector)) || '';
@@ -197,7 +196,6 @@ async function showModal(type, payload={}){
     const t = (payload.idx != null && payload.action) ? store.templates[payload.action][payload.idx] : null;
     document.getElementById('modalTitle').textContent = _getMsg(t ? 'modal_edit_template' : 'modal_add_template');
     document.getElementById('modal_template_action').value = payload.action || 'answer';
-    document.getElementById('modal_template_id').value = (t && t.id) || '';
     document.getElementById('modal_template_name').value = (t && t.name) || '';
     document.getElementById('modal_template_text').value = (t && t.text) || '{{selectedText}}';
   }
@@ -213,31 +211,50 @@ function initModal(){
     const modal = document.getElementById('editorModal');
     const { mode, editIdx, editAction } = modal.dataset;
     const store = await chrome.storage.sync.get(defaultState);
+
     if(mode === 'platform'){
-      const platform = {
-        key: document.getElementById('modal_platform_key').value.trim(),
-        name: document.getElementById('modal_platform_name').value.trim(),
-        url: document.getElementById('modal_platform_url').value.trim(),
-        inputSelector: document.getElementById('modal_platform_input_selector').value.trim(),
-        sendSelector: document.getElementById('modal_platform_send_selector').value.trim()
-      };
-      if(!platform.key || !platform.name){ showToast(_getMsg('validation_key_name_required'), { type:'error' }); return; }
-      if(editIdx !== '') { store.platforms[Number(editIdx)] = platform; }
-      else { store.platforms.push(platform); }
+      const name = document.getElementById('modal_platform_name').value.trim();
+      if (!name) { showToast(_getMsg('validation_name_required', 'Name is required.'), { type: 'error' }); return; }
+
+      let platform;
+      if (editIdx !== '') {
+        platform = store.platforms[Number(editIdx)];
+      } else {
+        platform = {
+          key: name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') + '_' + Date.now().toString(36).slice(-4)
+        };
+        store.platforms.push(platform);
+      }
+      platform.name = name;
+      platform.url = document.getElementById('modal_platform_url').value.trim();
+      platform.inputSelector = document.getElementById('modal_platform_input_selector').value.trim();
+      platform.sendSelector = document.getElementById('modal_platform_send_selector').value.trim();
+
       await chrome.storage.sync.set({platforms: store.platforms});
     } else if(mode === 'template'){
-      const template = {
-        id: document.getElementById('modal_template_id').value.trim(),
-        name: document.getElementById('modal_template_name').value.trim(),
-        text: document.getElementById('modal_template_text').value
-      };
+      const name = document.getElementById('modal_template_name').value.trim();
       const action = document.getElementById('modal_template_action').value;
-      if(!action || !template.id || !template.name){ showToast(_getMsg('validation_action_id_name_required'), { type:'error' }); return; }
-      store.templates[action] = store.templates[action] || [];
-      if(editIdx !== '' && editAction === action) { store.templates[action][Number(editIdx)] = template; }
-      else { store.templates[action].push(template); }
-       // If action was changed for an existing template, we might need to remove it from the old action array
-      if (editIdx !== '' && editAction !== action) { store.templates[editAction]?.splice(Number(editIdx), 1); }
+      if (!name) { showToast(_getMsg('validation_name_required', 'Name is required.'), { type: 'error' }); return; }
+
+      const templateText = document.getElementById('modal_template_text').value;
+      let template;
+
+      if (editIdx !== '' && editAction === action) {
+        template = store.templates[action][Number(editIdx)];
+        template.name = name;
+        template.text = templateText;
+      } else {
+        template = {
+          id: name.toLowerCase().replace(/[^a-z0-9]+/g, '_').replace(/^_|_$/g, '') + '_' + Date.now().toString(36).slice(-4),
+          name: name,
+          text: templateText
+        };
+        store.templates[action] = store.templates[action] || [];
+        store.templates[action].push(template);
+        if (editIdx !== '' && editAction !== action) {
+          store.templates[editAction]?.splice(Number(editIdx), 1);
+        }
+      }
       await chrome.storage.sync.set({templates: store.templates});
     }
     hideModal();
