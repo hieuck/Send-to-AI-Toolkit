@@ -1,55 +1,84 @@
-document.getElementById('openOptions').addEventListener('click', (e)=>{
-  e.preventDefault();
-  chrome.runtime.openOptionsPage();
-});
+const defaultState = { platforms: [], templates: {}, settings: { defaultLang: 'English' } };
 
-function showStatus(msg, success = false){
+function showStatus(msg, success = false) {
   const s = document.getElementById('status');
   s.textContent = msg;
-  s.style.color = success ? '' : '';
-  setTimeout(()=>{ s.textContent = '' }, 2500);
+  s.style.color = success ? 'green' : '#333';
+  setTimeout(() => { s.textContent = '' }, 2500);
 }
 
-const PLATFORM_URLS = {
-  chatgpt: 'https://chat.openai.com/',
-  gemini: 'https://ai.google/',
-  claude: 'https://www.anthropic.com/',
-  poe: 'https://poe.com/',
-  perplexity: 'https://perplexity.ai/',
-  deepseek: 'https://deepseek.ai/'
-};
-
-function openPlatform(platform, text){
-  // Basic behavior: open platform home and copy text to clipboard
-  const url = PLATFORM_URLS[platform] || 'about:blank';
-  navigator.clipboard.writeText(text || '').then(()=>{
-    const base = (chrome && chrome.i18n) ? chrome.i18n.getMessage('status_copied_opening') : 'Text copied to clipboard — opening';
-    showStatus(base + ' ' + platform);
+function openPlatform(platform, text) {
+  const url = platform.url || 'about:blank';
+  navigator.clipboard.writeText(text || '').then(() => {
+    const base = getMsg('status_copied_opening');
+    showStatus(`${base} ${platform.name}`);
     window.open(url, '_blank');
-  }).catch(()=>{
-    // fallback: still open
+  }).catch(() => {
     window.open(url, '_blank');
-    const opened = (chrome && chrome.i18n) ? chrome.i18n.getMessage('status_opened') : 'Opened';
-    showStatus(opened + ' ' + platform);
+    const opened = getMsg('status_opened');
+    showStatus(`${opened} ${platform.name}`);
   });
 }
 
-document.addEventListener('DOMContentLoaded', ()=>{
-  const input = document.getElementById('inputText');
-  document.querySelectorAll('.platform-item').forEach(btn=>{
-    btn.addEventListener('click', ()=>{
-      openPlatform(btn.dataset.platform, input.value.trim());
+async function load() {
+  const store = await chrome.storage.sync.get(defaultState);
+  renderPlatforms(store.platforms);
+  renderTemplates(store.templates);
+}
+
+function renderPlatforms(platforms) {
+  const grid = document.getElementById('platformGrid');
+  grid.innerHTML = '';
+  if (!platforms || platforms.length === 0) {
+    grid.innerHTML = `<p class="muted">${getMsg('no_platforms_configured')}</p>`;
+    return;
+  }
+  platforms.forEach(p => {
+    const btn = document.createElement('button');
+    btn.className = 'platform-item';
+    btn.textContent = p.name;
+    btn.addEventListener('click', () => {
+      const input = document.getElementById('inputText').value.trim();
+      openPlatform(p, input);
     });
+    grid.appendChild(btn);
+  });
+}
+
+function renderTemplates(templates) {
+  const select = document.getElementById('templateSelect');
+  select.innerHTML = `<option value="">${getMsg('choose_template')}</option>`;
+  if (!templates) return;
+
+  for (const action in templates) {
+    const optgroup = document.createElement('optgroup');
+    optgroup.label = getMsg(`action_${action}`);
+    templates[action].forEach(t => {
+      const opt = document.createElement('option');
+      opt.value = t.text;
+      opt.textContent = getMsg(t.name);
+      optgroup.appendChild(opt);
+    });
+    select.appendChild(optgroup);
+  }
+}
+
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('openOptions').addEventListener('click', (e) => {
+    e.preventDefault();
+    chrome.runtime.openOptionsPage();
   });
 
-  document.getElementById('clearBtn').addEventListener('click', ()=>{
-    input.value = '';
+  document.getElementById('clearBtn').addEventListener('click', () => {
+    document.getElementById('inputText').value = '';
   });
 
-  document.getElementById('templateSelect').addEventListener('change', (e)=>{
-    const v = e.target.value;
-    if(v === 'summarize') input.value = 'Please summarize the following text:\n\n';
-    else if(v === 'translate_vi') input.value = 'Translate the following text to Vietnamese:\n\n';
-    else if(v === 'qa') input.value = 'Read the following and answer questions about it:\n\n';
+  document.getElementById('templateSelect').addEventListener('change', (e) => {
+    const text = e.target.value;
+    if (!text) return;
+    const input = document.getElementById('inputText');
+    input.value = text.replace('{{selectedText}}', input.value);
   });
+
+  load();
 });

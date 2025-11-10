@@ -13,24 +13,17 @@
     </header>
 
     <div class="content">
-  <label for="inputText" class="sr-only" data-i18n="input_label">Input text</label>
-  <textarea id="inputText" data-i18n-placeholder="popup_placeholder" rows="5"></textarea>
+      <label for="inputText" class="sr-only" data-i18n="input_label">Input text</label>
+      <textarea id="inputText" data-i18n-placeholder="popup_placeholder" rows="5"></textarea>
 
-      <div class="platform-grid" role="list">
-        <button class="platform-item" data-platform="chatgpt" data-i18n="platform_chatgpt">ChatGPT</button>
-        <button class="platform-item" data-platform="gemini" data-i18n="platform_gemini">Gemini</button>
-        <button class="platform-item" data-platform="claude" data-i18n="platform_claude">Claude</button>
-        <button class="platform-item" data-platform="poe" data-i18n="platform_poe">POE</button>
-        <button class="platform-item" data-platform="perplexity" data-i18n="platform_perplexity">Perplexity</button>
-        <button class="platform-item" data-platform="deepseek" data-i18n="platform_deepseek">DeepSeek</button>
+      <div id="platformGrid" class="platform-grid" role="list">
+        <!-- Platforms will be dynamically loaded here -->
       </div>
 
       <div class="footer-row">
         <select id="templateSelect">
           <option value="" data-i18n="choose_template">-- Choose template --</option>
-          <option value="summarize" data-i18n="tmpl_summarize">Summarize</option>
-          <option value="translate_vi" data-i18n="tmpl_translate_vi">Translate to Vietnamese</option>
-          <option value="qa" data-i18n="tmpl_qa">Ask questions</option>
+          <!-- Templates will be dynamically loaded here -->
         </select>
         <button id="clearBtn" class="secondary" data-i18n="clear">Clear</button>
       </div>
@@ -38,6 +31,7 @@
       <div id="status" class="status" aria-live="polite"></div>
     </div>
 
+    <script src="../shared/utils.js"></script>
     <script src="../shared/i18n.js"></script>
     <script src="popup.js"></script>
 </body>
