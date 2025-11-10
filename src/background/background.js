@@ -88,9 +88,9 @@ chrome.contextMenus.onClicked.addListener(async (info, tab)=>{
     const payload = id.replace('template:','');
     const [platformKey, actionKey, templateId] = payload.split('|');
 
-    // get selection or link
-    const selectedText = info.selectionText || '';
-    const linkUrl = info.linkUrl || info.pageUrl || '';
+    // get selection or link. Prioritize selection, fallback to link
+    const mainContent = info.selectionText ? info.selectionText.trim() : (info.linkUrl || '');
+    const sourceUrl = info.linkUrl || info.pageUrl || '';
 
     // load user data
     const store = await chrome.storage.sync.get({ platforms: [], templates: {}, settings: {} });
@@ -122,8 +122,8 @@ chrome.contextMenus.onClicked.addListener(async (info, tab)=>{
 
     // assemble prompt data
     const data = {
-      selectedText: selectedText,
-      url: linkUrl,
+      selectedText: mainContent,
+      url: sourceUrl,
       targetLang: (settings.defaultLang || 'English'),
       action: actionKey,
       platform: platformKey

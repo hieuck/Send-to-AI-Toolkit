@@ -5,43 +5,36 @@ export const PLATFORMS = [
     key: "chatgpt",
     name: "ChatGPT",
     url: "https://chat.openai.com/",
-    // urlTemplate if platform supports prompt via URL; many web UIs don't — this is a best-effort
-    urlTemplate: "https://chat.openai.com/?q={{prompt}}",
     domainPatterns: ["chat.openai.com"]
   },
   {
     key: "gemini",
     name: "Gemini",
     url: "https://gemini.google.com/",
-    urlTemplate: "https://gemini.google.com/?q={{prompt}}",
     domainPatterns: ["gemini.google.com"]
   },
   {
     key: "claude",
     name: "Claude",
     url: "https://claude.ai/",
-    urlTemplate: "https://claude.ai/?q={{prompt}}",
     domainPatterns: ["claude.ai"]
   },
   {
     key: "poe",
     name: "POE",
     url: "https://poe.com/",
-    urlTemplate: "https://poe.com/",
     domainPatterns: ["poe.com"]
   },
   {
     key: "perplexity",
     name: "Perplexity",
     url: "https://www.perplexity.ai/",
-    urlTemplate: "https://www.perplexity.ai/search?q={{prompt}}",
     domainPatterns: ["perplexity.ai"]
   },
   {
     key: "deepseek",
     name: "DeepSeek",
     url: "https://deepseek.ai/",
-    urlTemplate: "https://deepseek.ai/?q={{prompt}}",
     domainPatterns: ["deepseek.ai"]
   }
 ];
