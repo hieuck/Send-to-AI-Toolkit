@@ -1,0 +1,14 @@
+{
+  "name": "send-to-ai",
+  "version": "1.0.0",
+  "description": "Send selected text or links to AI platforms with templated prompts.",
+  "scripts": {
+    "build": "node build.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "fs-extra": "^11.2.0"
+  }
+}
