@@ -1,0 +1,31 @@
+
+/* Options page layout */
+.options-container{ display:flex; min-height:100vh }
+.options-nav{ width:220px; background:var(--surface); border-right:1px solid var(--stroke); padding:16px; }
+.options-nav .logo-header{ display:flex; align-items:center; gap:10px; margin-bottom:24px; }
+.options-nav h1{ font-size:16px; margin:0 }
+.options-nav .nav-item{ display:block; padding:10px 12px; border-radius:8px; text-decoration:none; color:var(--text); font-weight:500; margin-bottom:4px; }
+.options-nav .nav-item.active, .options-nav .nav-item:hover{ background:var(--accent); color:#fff; }
+
+.options-content{ flex:1; padding:24px; }
+.content-header{ display:flex; align-items:center; justify-content:space-between; margin-bottom:16px; padding-bottom:12px; border-bottom:1px solid var(--stroke); }
+.content-header h2{ margin:0; font-size:20px; }
+.content-header p{ margin:4px 0 0; }
+
+.card{ background:var(--surface); border:1px solid var(--stroke); border-radius:10px; padding:16px; margin-bottom:16px; }
+.content-section{ display:none; }
+.content-section.active{ display:block; }
+
+.section-header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:12px; }
+.section-header h2{ margin:0; font-size:16px; }
+
+.row{ display:grid; grid-template-columns:220px 1fr; gap:16px; align-items:center; margin-top:12px; }
+.row label{ font-weight:500; }
+.row .actions{ grid-column:2; }
+
+.list .list-item{ display:flex; justify-content:space-between; align-items:center; gap:8px; padding:10px; border-radius:8px; border:1px solid var(--stroke); margin:8px 0; background: #fff }
+.list .list-item-details{ flex:1 }
+.list .list-item-title{ font-weight:600; }
+.list .list-item-desc{ color:var(--muted); font-size:13px; }
+.list ul{ padding-left:18px }
+

@@ -1,0 +1,13 @@
+
+/* Common popup styles */
+body.popup{ min-width:320px; padding:12px; }
+.popup-header{ display:flex; align-items:center; gap:8px; padding-bottom:8px }
+.popup .title{ font-weight:700; font-size:16px }
+.popup .icon-btn{ margin-left:auto; }
+.popup #inputText{ width:100%; resize:vertical; border:1px solid var(--stroke); border-radius:8px; padding:8px; font-size:13px; color:var(--text); min-height:84px }
+.popup .platform-grid{ display:grid; grid-template-columns:repeat(3,1fr); gap:8px; margin-top:10px }
+.popup .platform-item{ background:#fff; border:1px solid var(--stroke); padding:8px 10px; border-radius:8px; cursor:pointer; font-weight:600; font-size:13px }
+.popup .platform-item:hover{ box-shadow:0 4px 10px rgba(16,24,40,0.06); transform:translateY(-1px) }
+.popup .footer-row{ display:flex; gap:8px; margin-top:10px; align-items:center }
+.popup #templateSelect{ flex:1; padding:7px 8px; border-radius:8px; border:1px solid var(--stroke) }
+.popup .status{ margin-top:8px; font-size:13px; color:var(--muted); min-height:18px }
