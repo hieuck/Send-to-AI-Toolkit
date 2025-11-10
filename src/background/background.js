@@ -42,7 +42,7 @@ async function buildContextMenus(){
       // actions under platform
       ACTIONS.forEach(action =>{
         const aId = `action:${platform.key}|${action.key}`;
-        safeCreate({ id: aId, title: chrome.i18n.getMessage(action.name) || action.name, parentId: pId, contexts: ['selection','link'], icons: { '16': action.icon } });
+        safeCreate({ id: aId, title: chrome.i18n.getMessage(action.name) || action.name, parentId: pId, contexts: ['selection','link'] });
 
         // templates under action
         if (templates && templates[action.key]) {

@@ -46,9 +46,9 @@ export const PLATFORMS = [
 ];
 
 export const ACTIONS = [
-  { key: "answer", name: "action_answer", icon: "src/assets/icons/actions/answer.svg" },
-  { key: "rewrite", name: "action_rewrite", icon: "src/assets/icons/actions/rewrite.svg" },
-  { key: "translate", name: "action_translate", icon: "src/assets/icons/actions/translate.svg" }
+  { key: "answer", name: "action_answer" },
+  { key: "rewrite", name: "action_rewrite" },
+  { key: "translate", name: "action_translate" }
 ];
 
 // Default templates (category: action -> templates list)
