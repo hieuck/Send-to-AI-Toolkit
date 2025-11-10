@@ -182,8 +182,8 @@ async function showModal(type, payload={}){
   const tf = document.getElementById('templateFields');
 
   if(type === 'platform'){
-    pf.classList.remove('hidden');
-    tf.classList.add('hidden');
+    pf.style.display = 'block';
+    tf.style.display = 'none';
     const p = (payload.idx != null) ? store.platforms[payload.idx] : null;
     document.getElementById('modalTitle').textContent = _getMsg(p ? 'modal_edit_platform' : 'modal_add_platform');
     document.getElementById('modal_platform_name').value = (p && p.name) || '';
@@ -191,8 +191,8 @@ async function showModal(type, payload={}){
     document.getElementById('modal_platform_input_selector').value = (p && (p.inputSelector || p.input_selector)) || '';
     document.getElementById('modal_platform_send_selector').value = (p && (p.sendSelector || p.send_selector)) || '';
   } else { // template
-    pf.classList.add('hidden');
-    tf.classList.remove('hidden');
+    pf.style.display = 'none';
+    tf.style.display = 'block';
     const t = (payload.idx != null && payload.action) ? store.templates[payload.action][payload.idx] : null;
     document.getElementById('modalTitle').textContent = _getMsg(t ? 'modal_edit_template' : 'modal_add_template');
     document.getElementById('modal_template_action').value = payload.action || 'answer';
@@ -257,6 +257,7 @@ function initModal(){
       }
       await chrome.storage.sync.set({templates: store.templates});
     }
+    showToast(_getMsg('settings_saved', 'Changes saved'), { type: 'success' });
     hideModal();
     load();
   });
