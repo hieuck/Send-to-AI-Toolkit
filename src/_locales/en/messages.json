@@ -53,7 +53,7 @@
   "action_code": { "message": "Code" },
   "action_summarize": { "message": "Summarize" },
   "modal_save": { "message": "Save" },
-  "modal_cancel":. { "message": "Cancel" },
+  "modal_cancel": { "message": "Cancel" },
   "toast_yes": { "message": "Yes" },
   "toast_no": { "message": "No" },
   "lang_en": { "message": "English" },
