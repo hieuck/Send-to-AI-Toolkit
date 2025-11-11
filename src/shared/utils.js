@@ -38,7 +38,7 @@ function _do_in_page_script(platform, prompt) {
         if (inputEl) {
             clearInterval(intervalId);
 
-            // Per user request: add a delay, clear the input, then set the new value.
+            // Delay to ensure the page is fully ready for interaction.
             setTimeout(() => {
                 // 1. Focus the input element.
                 inputEl.focus();
@@ -62,26 +62,24 @@ function _do_in_page_script(platform, prompt) {
                 inputEl.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
                 inputEl.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
 
-                // 4. Click the send button.
+                // 4. Click the send button IMMEDIATELY.
                 if (sendSelector) {
-                    setTimeout(() => {
-                        const sendBtn = document.querySelector(sendSelector);
-                        if (sendBtn && !sendBtn.disabled) {
-                            sendBtn.click();
-                        } else {
-                            // Retry after a short delay
-                            setTimeout(() => {
-                                const finalSendBtn = document.querySelector(sendSelector);
-                                if (finalSendBtn && !finalSendBtn.disabled) {
-                                    finalSendBtn.click();
-                                } else {
-                                    console.warn(`[Send-to-AI] Send button not found or disabled. Selector: "${sendSelector}"`);
-                                }
-                            }, 500);
-                        }
-                    }, 700);
+                    const sendBtn = document.querySelector(sendSelector);
+                    if (sendBtn && !sendBtn.disabled) {
+                        sendBtn.click();
+                    } else {
+                        // The button might be disabled momentarily. Retry after a short delay.
+                        setTimeout(() => {
+                            const finalSendBtn = document.querySelector(sendSelector);
+                            if (finalSendBtn && !finalSendBtn.disabled) {
+                                finalSendBtn.click();
+                            } else {
+                                console.warn(`[Send-to-AI] Send button not found or disabled. Selector: "${sendSelector}"`);
+                            }
+                        }, 400); // A small retry delay, just in case.
+                    }
                 }
-            }, 300); // 300ms delay to ensure the page is fully ready for interaction.
+            }, 300); // 300ms delay for page to settle.
 
         } else {
             attempt++;
