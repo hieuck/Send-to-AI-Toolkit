@@ -26,7 +26,6 @@ export function assemblePrompt(template, data) {
     });
 }
 
-// This function is injected into the target page to interact with the DOM.
 function _do_in_page_script(platform, prompt) {
     const { inputSelector } = platform;
     let attempt = 0;
@@ -37,23 +36,19 @@ function _do_in_page_script(platform, prompt) {
         const inputEl = document.querySelector(inputSelector);
         if (inputEl) {
             clearInterval(intervalId);
-            
             inputEl.focus();
 
             const isContentEditable = inputEl.hasAttribute('contenteditable') && inputEl.getAttribute('contenteditable').toLowerCase() !== 'false';
 
             if (isContentEditable) {
-                inputEl.innerText = prompt;
+                // Correct method for rich text editors (like Gemini)
+                inputEl.innerHTML = prompt.replace(/\n/g, '<br>');
             } else {
-                const elementPrototype = Object.getPrototypeOf(inputEl);
-                const nativeInputValueSetter = Object.getOwnPropertyDescriptor(elementPrototype, 'value').set;
-                if (nativeInputValueSetter) {
-                    nativeInputValueSetter.call(inputEl, prompt);
-                } else {
-                    inputEl.value = prompt;
-                }
+                // Simple and reliable method for textareas (like ChatGPT)
+                inputEl.value = prompt;
             }
 
+            // Dispatch events to ensure the page's framework detects the change
             inputEl.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
             inputEl.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
 
@@ -67,7 +62,7 @@ function _do_in_page_script(platform, prompt) {
                     } else {
                         console.warn(`[Send-to-AI] Send button not found with selector: "${platform.sendSelector}"`);
                     }
-                }, 200);
+                }, 500); // Increased delay for safety
             }
         } else {
             attempt++;
