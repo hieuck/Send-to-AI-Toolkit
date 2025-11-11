@@ -54,11 +54,27 @@ chrome.runtime.onInstalled.addListener(() => {
 });
 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
+    chrome.storage.sync.get(null, (items) => {
+        console.log('[AI Toolkit] Storage dump:', items);
+        if (items.settings && items.settings.urlBase) {
+            console.log('[AI Toolkit] Saved base URL from storage:', items.settings.urlBase);
+        } else {
+            console.log('[AI Toolkit] Saved base URL from storage is null or not set.');
+        }
+    });
+
     const { menuItemId, selectionText } = info;
     const parts = menuItemId.replace('platform-', '').split('-');
     const [platformKey, actionKey, _, templateIndex] = parts;
 
     const platform = PLATFORMS.find(p => p.key === platformKey);
+
+    if (platform) {
+        console.log('[AI Toolkit] Platform found:', platform);
+        console.log('[AI Toolkit] Default platform URL:', platform.url);
+    } else {
+        console.log('[AI Toolkit] Platform not found for key:', platformKey);
+    }
 
     if (platform && selectionText) {
 		let text = selectionText;
