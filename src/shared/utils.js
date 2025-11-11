@@ -37,44 +37,52 @@ function _do_in_page_script(platform, prompt) {
         const inputEl = document.querySelector(inputSelector);
         if (inputEl) {
             clearInterval(intervalId);
-            
-            // Step 1: Focus the input element.
-            inputEl.focus();
 
-            // Step 2: Simulate a robust 'paste' event.
-            const pasteEvent = new ClipboardEvent('paste', {
-                clipboardData: new DataTransfer(),
-                bubbles: true,
-                cancelable: true,
-                composed: true
-            });
-            pasteEvent.clipboardData.setData('text/plain', prompt);
-            inputEl.dispatchEvent(pasteEvent);
+            // Per user request: add a delay, clear the input, then set the new value.
+            setTimeout(() => {
+                // 1. Focus the input element.
+                inputEl.focus();
 
-            // Step 3: Dispatch an 'input' event to ensure frameworks recognize the change.
-            inputEl.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-            
-            // Step 4: Dispatch a 'change' event for final confirmation.
-            inputEl.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+                // 2. Clear the input field ("xóa hành động mặc định").
+                inputEl.value = '';
+                inputEl.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
 
-            if (sendSelector) {
-                setTimeout(() => {
-                    const sendBtn = document.querySelector(sendSelector);
-                    if (sendBtn && !sendBtn.disabled) {
-                        sendBtn.click();
-                    } else {
-                        // Retry after a short delay, as the button might be re-enabled by the framework
-                        setTimeout(() => {
-                            const finalSendBtn = document.querySelector(sendSelector);
-                            if (finalSendBtn && !finalSendBtn.disabled) {
-                                finalSendBtn.click();
-                            } else {
-                                console.warn(`[Send-to-AI] Send button not found or disabled. Selector: "${sendSelector}"`);
-                            }
-                        }, 500);
-                    }
-                }, 700); 
-            }
+                // 3. Set the new prompt value ("dán văn bản").
+                inputEl.value = prompt;
+                
+                const pasteEvent = new ClipboardEvent('paste', {
+                    clipboardData: new DataTransfer(),
+                    bubbles: true,
+                    cancelable: true,
+                    composed: true
+                });
+                pasteEvent.clipboardData.setData('text/plain', prompt);
+                inputEl.dispatchEvent(pasteEvent);
+
+                inputEl.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+                inputEl.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+
+                // 4. Click the send button.
+                if (sendSelector) {
+                    setTimeout(() => {
+                        const sendBtn = document.querySelector(sendSelector);
+                        if (sendBtn && !sendBtn.disabled) {
+                            sendBtn.click();
+                        } else {
+                            // Retry after a short delay
+                            setTimeout(() => {
+                                const finalSendBtn = document.querySelector(sendSelector);
+                                if (finalSendBtn && !finalSendBtn.disabled) {
+                                    finalSendBtn.click();
+                                } else {
+                                    console.warn(`[Send-to-AI] Send button not found or disabled. Selector: "${sendSelector}"`);
+                                }
+                            }, 500);
+                        }
+                    }, 700);
+                }
+            }, 300); // 300ms delay to ensure the page is fully ready for interaction.
+
         } else {
             attempt++;
             if (attempt >= maxAttempts) {
@@ -84,6 +92,7 @@ function _do_in_page_script(platform, prompt) {
         }
     }, interval);
 }
+
 
 // Injects the script into the tab, handling cases where the tab is still loading.
 function injectScript(tabId, platform, prompt) {
