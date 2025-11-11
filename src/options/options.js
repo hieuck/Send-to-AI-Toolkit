@@ -209,7 +209,8 @@ async function showModal(type, payload={}){
         document.getElementById('modalTitle').textContent = getMessage(t ? 'modal_edit_template' : 'modal_add_template');
         document.getElementById('modal_template_action').value = payload.action || 'answer';
         document.getElementById('modal_template_name').value = t ? (getMessage(t.name) || t.name) : '';
-        document.getElementById('modal_template_text').value = t ? (getMessage(t.text) || t.text) : '{{selectedText}}';
+        const templateText = t ? t.text : '{{selectedText}}';
+        document.getElementById('modal_template_text').value = getMessage(templateText, templateText);
     }
 }
 

@@ -1,4 +1,5 @@
 import { PLATFORMS, ACTIONS, DEFAULT_TEMPLATES } from '../shared/menu.js';
+import { geti18n, __ } from '../shared/i18n.js';
 
 // --- Menu Creation ---
 
@@ -15,7 +16,7 @@ function createContextMenu() {
             chrome.contextMenus.create({
                 id: parentId,
                 parentId: 'send-to-ai-toolkit',
-                title: platform.name,
+                title: __(platform.name),
                 contexts: ['selection']
             });
 
@@ -23,7 +24,7 @@ function createContextMenu() {
                 chrome.contextMenus.create({
                     id: `${parentId}-${action.key}`,
                     parentId: parentId,
-                    title: action.name,
+                    title: __(action.name),
                     contexts: ['selection']
                 });
             });
@@ -44,6 +45,15 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
     const platform = PLATFORMS.find(p => p.key === platformId);
 
     if (platform && selectionText) {
+		let text = selectionText;
+        const action = ACTIONS.find(a => a.key === actionKey);
+        if (action) {
+            const template = DEFAULT_TEMPLATES[action.key][0];
+            if (template) {
+                text = __(template.text, selectionText);
+            }
+        }
+		
         // Create the tab
         chrome.tabs.create({ url: platform.url }, newTab => {
             // We need to wait for the tab to be fully loaded before sending the message
@@ -54,7 +64,7 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
                     // Send the message to the content script
                     chrome.tabs.sendMessage(tabId, {
                         action: 'execute',
-                        text: selectionText, // Use the selected text directly
+                        text: text,
                         inputSelector: platform.inputSelector,
                         sendSelector: platform.sendSelector
                     });

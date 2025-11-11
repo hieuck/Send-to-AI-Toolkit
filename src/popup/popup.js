@@ -101,7 +101,17 @@ function renderActionButtons(templates, settings) {
                 });
             });
         } else {
-          mainBtn.disabled = true; // Disable main button if no templates exist
+            // Keep the main button enabled, but clicking it will just send the text directly
+            mainBtn.addEventListener('click', () => {
+                 if (!selectedPlatform) return;
+                    const text = document.getElementById('inputText').value.trim();
+                    if (!text) {
+                        document.getElementById('inputText').focus();
+                        return;
+                    }
+
+                openPlatformWithPrompt(selectedPlatform, text);
+            });
         }
 
         // Toggle template list on main button click
