@@ -1,6 +1,7 @@
 {
   "extension_name": { "message": "Gửi tới AI" },
   "extension_description": { "message": "Gửi văn bản hoặc liên kết đã chọn đến các nền tảng AI với các mẫu lời nhắc." },
+  "send_to_ai_toolkit": { "message": "Gửi tới Công cụ AI" },
   "open_settings": { "message": "Cài đặt" },
   "popup_placeholder": { "message": "Dán hoặc gõ văn bản vào đây..." },
   "input_label": { "message": "Nhập văn bản" },
@@ -71,5 +72,6 @@
   "template_translate_formal": { "message": "Bản dịch trang trọng" },
   "template_translate_formal_text": { "message": "Dịch sang {{targetLang}} với giọng điệu trang trọng: {{selectedText}}" },
   "template_translate_casual": { "message": "Bản dịch thông thường" },
-  "template_translate_casual_text": { "message": "Dịch sang {{targetLang}} với giọng điệu thông thường: {{selectedText}}" }
+  "template_translate_casual_text": { "message": "Dịch sang {{targetLang}} với giọng điệu thông thường: {{selectedText}}" },
+  "storage_and_usage_info": { "message": "Các thay đổi được lưu vào bộ nhớ tiện ích mở rộng. Sử dụng menu ngữ cảnh hoặc cửa sổ bật lên của tiện ích mở rộng để gửi các lựa chọn đến nền tảng AI." }
 }

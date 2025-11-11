@@ -1,6 +1,7 @@
 {
   "extension_name": { "message": "Send to AI" },
   "extension_description": { "message": "Send selected text or links to AI platforms with prompt templates." },
+  "send_to_ai_toolkit": { "message": "Send to AI Toolkit" },
   "open_settings": { "message": "Settings" },
   "popup_placeholder": { "message": "Paste or type text here..." },
   "input_label": { "message": "Input text" },
@@ -71,5 +72,6 @@
   "template_translate_formal": { "message": "Formal Translation" },
   "template_translate_formal_text": { "message": "Translate to {{targetLang}} in a formal voice: {{selectedText}}" },
   "template_translate_casual": { "message": "Casual Translation" },
-  "template_translate_casual_text": { "message": "Translate to {{targetLang}} in a casual voice: {{selectedText}}" }
+  "template_translate_casual_text": { "message": "Translate to {{targetLang}} in a casual voice: {{selectedText}}" },
+  "storage_and_usage_info": { "message": "Changes are saved to extension storage. Use the extension context menu or popup to send selections to AI platforms." }
 }
