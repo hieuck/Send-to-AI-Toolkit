@@ -73,11 +73,13 @@ function renderPlatforms(list){
         <div class="list-item-desc">${p.url || ''}</div>
       </div>
       <div class="actions">
+        <button data-idx="${idx}" class="open secondary">${getMessage('open_label', 'Open')}</button>
         <button data-idx="${idx}" class="edit secondary">${getMessage('edit_label', 'Edit')}</button>
         <button data-idx="${idx}" class="del secondary">${getMessage('delete_label', 'Delete')}</button>
       </div>`;
     container.appendChild(div);
   });
+  container.querySelectorAll('button.open').forEach(b=>b.addEventListener('click', onOpenPlatform));
   container.querySelectorAll('button.edit').forEach(b=>b.addEventListener('click', onEditPlatform));
   container.querySelectorAll('button.del').forEach(b=>b.addEventListener('click', onDeletePlatform));
 }
@@ -108,6 +110,14 @@ function renderTemplates(map){
 }
 
 /* --- Event Handlers --- */
+async function onOpenPlatform(e){
+  const idx = Number(e.target.dataset.idx);
+  const store = await chrome.storage.sync.get(defaultState);
+  const platform = store.platforms[idx];
+  if (platform && platform.url) {
+    window.open(platform.url, '_blank');
+  }
+}
 async function onEditPlatform(e){ showModal('platform', { idx: Number(e.target.dataset.idx) }); }
 async function onEditTemplate(e){ showModal('template', { action: e.target.dataset.action, idx: Number(e.target.dataset.idx) }); }
 
