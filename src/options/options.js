@@ -50,13 +50,34 @@ function confirmToast(messageKey, { yesLabel=null, noLabel=null, timeout=8000 } 
 async function load(){
   const store = await chrome.storage.sync.get(defaultState);
   document.getElementById('defaultLang').value = (store.settings && store.settings.defaultLang) || 'English';
+  
   let platforms = store.platforms || [];
   if(platforms.length === 0){
     platforms = PLATFORMS.map(p=>({ ...p }));
     await chrome.storage.sync.set({ platforms });
   }
+  
+  // Merge default templates with stored templates to ensure new defaults are added
+  const templates = store.templates || {};
+  let templatesModified = false;
+  for (const action in DEFAULT_TEMPLATES) {
+    if (!templates[action]) {
+      templates[action] = [];
+    }
+    const existingNames = new Set(templates[action].map(t => t.name));
+    const newDefaults = DEFAULT_TEMPLATES[action].filter(t => !existingNames.has(t.name));
+    if (newDefaults.length > 0) {
+      templates[action].push(...newDefaults.map(t => ({...t}))); // Push copies
+      templatesModified = true;
+    }
+  }
+
+  if (templatesModified) {
+    await chrome.storage.sync.set({ templates });
+  }
+
   renderPlatforms(platforms);
-  renderTemplates(store.templates || DEFAULT_TEMPLATES);
+  renderTemplates(templates);
 }
 
 function renderPlatforms(list){
