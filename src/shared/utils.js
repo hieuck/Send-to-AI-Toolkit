@@ -31,26 +31,36 @@ export function assemblePrompt(template, data) {
 
 // This function will be injected into the target page
 function _do_in_page_script(platform, prompt) {
-    const inputEl = document.querySelector(platform.input_selector);
+    const inputEl = document.querySelector(platform.inputSelector);
     if (!inputEl) {
-        console.warn(`[Send-to-AI] Input element not found with selector: "${platform.input_selector}"`);
+        console.warn(`[Send-to-AI] Input element not found with selector: "${platform.inputSelector}"`);
         return;
     }
 
     // To properly trigger framework-based UIs (like React), we need to simulate user input
-    inputEl.value = prompt;
+    inputEl.focus();
+    if (inputEl.hasAttribute('contenteditable')) {
+        // For contenteditable divs, simulating input is more complex.
+        document.execCommand('insertText', false, prompt);
+    } else {
+        // For textarea or input fields
+        inputEl.value = prompt;
+    }
+
     inputEl.dispatchEvent(new Event('input', { bubbles: true }));
     inputEl.dispatchEvent(new Event('change', { bubbles: true }));
-    inputEl.focus();
 
-    if (platform.send_selector) {
-        // A small delay can help if the send button is initially disabled
+    if (platform.sendSelector) {
         setTimeout(() => {
-            const sendBtn = document.querySelector(platform.send_selector);
+            const sendBtn = document.querySelector(platform.sendSelector);
             if (sendBtn) {
-                sendBtn.click();
+                if (sendBtn.disabled) {
+                    console.warn(`[Send-to-AI] Send button is disabled.`);
+                } else {
+                    sendBtn.click();
+                }
             } else {
-                console.warn(`[Send-to-AI] Send button not found with selector: "${platform.send_selector}"`);
+                console.warn(`[Send-to-AI] Send button not found with selector: "${platform.sendSelector}"`);
             }
         }, 200);
     }
@@ -58,10 +68,10 @@ function _do_in_page_script(platform, prompt) {
 
 
 export function openPlatformWithPrompt(platform, prompt) {
-    const { url, input_selector } = platform;
+    const { url, inputSelector } = platform;
 
     // For platforms requiring DOM interaction, open a tab and inject a script
-    if (input_selector) {
+    if (inputSelector) {
         chrome.tabs.create({ url: url }, (tab) => {
             // Ensure the tab is loaded before injecting the script
             const listener = (tabId, changeInfo, t) => {

@@ -83,25 +83,44 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         return;
     }
 
+    const content = info.selectionText ? info.selectionText.trim() : (info.linkUrl || '');
+    const store = await chrome.storage.sync.get({ platforms: PLATFORMS, templates: DEFAULT_TEMPLATES, settings: {} });
+
     if (typeof id === 'string' && id.startsWith('template:')) {
         const [, payload] = id.split(':');
         const [platformKey, actionKey, templateId] = payload.split('|');
 
-        const content = info.selectionText ? info.selectionText.trim() : (info.linkUrl || '');
-        const store = await chrome.storage.sync.get({ platforms: PLATFORMS, templates: DEFAULT_TEMPLATES, settings: {} });
         const platform = store.platforms.find(p => p.key === platformKey);
-
         if (!platform) return;
 
         let templateText = '{{selectedText}}';
         if (store.templates && store.templates[actionKey]) {
             const template = store.templates[actionKey].find(t => t.id === templateId);
             if (template) {
-                templateText = template.text;
+                templateText = chrome.i18n.getMessage(template.text) || template.text;
             }
         }
 
         const prompt = assemblePrompt(templateText, {
+            selectedText: content,
+            url: info.pageUrl,
+            targetLang: store.settings.defaultLang || 'English'
+        });
+
+        openPlatformWithPrompt(platform, prompt);
+    } else if (typeof id === 'string' && id.startsWith('action:')) {
+        const [, payload] = id.split(':');
+        const [platformKey, actionKey] = payload.split('|');
+
+        const platform = store.platforms.find(p => p.key === platformKey);
+        if (!platform) return;
+
+        // Find the action to get the default template
+        const action = ACTIONS.find(a => a.key === actionKey);
+        if (!action) return;
+
+        // Use a generic prompt for direct actions
+        const prompt = assemblePrompt("{{selectedText}}", {
             selectedText: content,
             url: info.pageUrl,
             targetLang: store.settings.defaultLang || 'English'
