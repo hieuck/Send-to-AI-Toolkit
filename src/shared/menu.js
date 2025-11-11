@@ -63,11 +63,13 @@ export const DEFAULT_TEMPLATES = {
         { name: 'template_answer_quick', text: 'template_answer_quick_text' },
         { name: 'template_answer_short', text: 'template_answer_short_text' },
         { name: 'template_answer_detailed', text: 'template_answer_detailed_text' },
+        { name: 'template_answer_reply_in_tone', text: 'template_answer_reply_in_tone_text' }
     ],
     rewrite: [
         { name: 'template_rewrite_quick', text: 'template_rewrite_quick_text' },
         { name: 'template_rewrite_short', text: 'template_rewrite_short_text' },
         { name: 'template_rewrite_detailed', text: 'template_rewrite_detailed_text' },
+        { name: 'template_rewrite_tone', text: 'template_rewrite_tone_text' },
     ],
     translate: [
         { name: 'template_translate_quick', text: 'template_translate_quick_text' },

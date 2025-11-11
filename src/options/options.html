@@ -142,7 +142,10 @@
               <option value="summarize" data-i18n="action_summarize">Summarize</option>
             </select>
           </label>
-          <label><span data-i18n="modal_label_template_name">Template Name</span><input id="modal_template_name" required /></label>
+          <label><span data-i18n="modal_label_template_name">Template Name</span><input id="modal_template__name" required /></label>
+
+          <label id="modal_template_tone_label" style="display: none;"><span data-i18n="modal_label_tone">Tone</span><input id="modal_template_tone" /></label>
+
           <label>
             <span data-i18n="modal_label_template_text">Template Text</span>
             <textarea id="modal_template_text" rows="4"></textarea>
@@ -150,6 +153,7 @@
           <div class="variable-chips">
             <button type="button" data-variable="{{selectedText}}" class="chip">{{selectedText}}</button>
             <button type="button" data-variable="{{targetLang}}" class="chip">{{targetLang}}</button>
+            <button type="button" data-variable="{{tone}}" class="chip">{{tone}}</button>
           </div>
         </div>
 

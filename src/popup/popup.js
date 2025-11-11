@@ -107,10 +107,19 @@ function renderActionButtons(templates, settings) {
                     }
 
                     const templateText = getMessage(template.text) || template.text;
+
+                    let tone = '';
+                    if (templateText.includes("{{tone}}")) {
+                        tone = prompt(getMessage('enter_tone_prompt'));
+                        if (tone === null) return; // User cancelled
+                    }
+
                     const prompt = assemblePrompt(templateText, {
                         selectedText: text,
-                        targetLang: settings.defaultLang || 'English'
+                        targetLang: settings.defaultLang || 'English',
+                        tone: tone
                     });
+
                     openPlatformWithPrompt(selectedPlatform, prompt);
                 });
             });

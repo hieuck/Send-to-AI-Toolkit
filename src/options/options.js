@@ -288,6 +288,7 @@ async function showModal(type, payload={}){
     const pf = document.getElementById('platformFields');
     const tf = document.getElementById('templateFields');
     const nameInput = document.getElementById('modal_platform_name');
+    const toneField = document.getElementById('modal_template_tone_label');
 
     if (type === 'platform') {
         pf.style.display = 'block';
@@ -310,7 +311,20 @@ async function showModal(type, payload={}){
         document.getElementById('modal_template_action').value = payload.action || 'answer';
         document.getElementById('modal_template_name').value = t ? (getMessage(t.name) || t.name) : '';
         const templateText = t ? t.text : '{{selectedText}}';
-        document.getElementById('modal_template_text').value = getMessage(templateText, templateText);
+        const templateTextEl = document.getElementById('modal_template_text');
+        templateTextEl.value = getMessage(templateText, templateText);
+
+        const updateToneField = () => {
+            if (templateTextEl.value.includes('{{tone}}')) {
+                toneField.style.display = 'block';
+            } else {
+                toneField.style.display = 'none';
+            }
+        };
+
+        templateTextEl.addEventListener('input', updateToneField);
+        updateToneField();
+        document.getElementById('modal_template_tone').value = (t && t.tone) || '';
     }
 }
 
@@ -357,6 +371,8 @@ function initModal(){
       if (!name) { showToast('validation_name_required', { type: 'error' }); return; }
 
       const templateText = document.getElementById('modal_template_text').value;
+      const tone = document.getElementById('modal_template_tone').value.trim();
+
       let template;
 
       if (editIdx !== '' && editAction === action) {
@@ -375,6 +391,13 @@ function initModal(){
           store.templates[editAction]?.splice(Number(editIdx), 1);
         }
       }
+
+      if (templateText.includes('{{tone}}')) {
+        template.tone = tone;
+      } else {
+        delete template.tone;
+      }
+
       await chrome.storage.sync.set({templates: store.templates});
       changed = true;
     }
@@ -402,6 +425,8 @@ function initModal(){
           const textarea = document.getElementById('modal_template_text');
           const variable = e.target.dataset.variable;
           insertVariable(textarea, variable);
+          // Manually trigger input event to update tone field visibility
+          textarea.dispatchEvent(new Event('input'));
       });
   });
 }
