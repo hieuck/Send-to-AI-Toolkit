@@ -145,6 +145,66 @@ async function onDeleteTemplate(e){
   }
 }
 
+/* --- Import/Export --- */
+async function exportTemplates() {
+  const store = await chrome.storage.sync.get(defaultState);
+  const templatesToExport = {};
+
+  // Only export user-defined templates, not default ones.
+  for (const action in store.templates) {
+    templatesToExport[action] = store.templates[action].filter(template => 
+      !Object.values(DEFAULT_TEMPLATES).flat().some(defaultTpl => defaultTpl.name === template.name)
+    );
+  }
+
+  const blob = new Blob([JSON.stringify(templatesToExport, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = 'send-to-ai-templates.json';
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function importTemplates(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = async (e) => {
+    try {
+      const importedTemplates = JSON.parse(e.target.result);
+      const store = await chrome.storage.sync.get(defaultState);
+
+      for (const action in importedTemplates) {
+        if (!store.templates[action]) {
+          store.templates[action] = [];
+        }
+
+        const existingNames = new Set(store.templates[action].map(t => t.name));
+        const newTemplates = importedTemplates[action].filter(t => !existingNames.has(t.name));
+        store.templates[action].push(...newTemplates);
+      }
+
+      await chrome.storage.sync.set({ templates: store.templates });
+      load();
+      showToast('templates_imported_success', { type: 'success' });
+      notifyServiceWorker();
+    } catch (error) {
+      console.error("Error importing templates:", error);
+      showToast('template_import_error', { type: 'error' });
+    }
+
+    // Reset file input so the same file can be loaded again
+    event.target.value = '';
+  };
+
+  reader.readAsText(file);
+}
+
+
 /* --- Initialization --- */
 async function init(){
   // Load locale and localize page
@@ -173,6 +233,12 @@ async function init(){
   document.getElementById('addPlatform').addEventListener('click', () => showModal('platform'));
   document.getElementById('addTemplate').addEventListener('click', () => showModal('template'));
 
+  // Import/Export Handlers
+  document.getElementById('exportTemplates').addEventListener('click', exportTemplates);
+  document.getElementById('importTemplates').addEventListener('click', () => document.getElementById('importFileInput').click());
+  document.getElementById('importFileInput').addEventListener('change', importTemplates);
+
+
   // Setup navigation between sections
   const navItems = document.querySelectorAll('.options-nav .nav-item');
   const sections = document.querySelectorAll('.content-section');
@@ -198,6 +264,17 @@ async function init(){
   initLocaleSwitcher();
 }
 
+/* Helper to insert variable into textarea at cursor */
+function insertVariable(textarea, variable) {
+    const start = textarea.selectionStart;
+    const end = textarea.selectionEnd;
+    const text = textarea.value;
+    const before = text.substring(0, start);
+    const after = text.substring(end, text.length);
+    textarea.value = before + variable + after;
+    textarea.selectionStart = textarea.selectionEnd = start + variable.length;
+    textarea.focus();
+}
 
 /* --- Modal editor implementation --- */
 async function showModal(type, payload={}){
@@ -317,6 +394,15 @@ function initModal(){
   document.getElementById('modal_open_url').addEventListener('click', ()=>{
     const url = document.getElementById('modal_platform_url').value;
     if(url){ window.open(url, '_blank'); }
+  });
+
+  // Add listeners for the variable chips
+  document.querySelectorAll('.variable-chips .chip').forEach(chip => {
+      chip.addEventListener('click', (e) => {
+          const textarea = document.getElementById('modal_template_text');
+          const variable = e.target.dataset.variable;
+          insertVariable(textarea, variable);
+      });
   });
 }
 

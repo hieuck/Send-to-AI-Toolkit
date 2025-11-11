@@ -5,6 +5,25 @@
   <title data-i18n="options_title">Send-to-AI Options</title>
   <link rel="stylesheet" href="../styles/style.css" />
   <link rel="stylesheet" href="options.css" />
+  <style>
+    .variable-chips {
+      display: flex;
+      gap: 6px;
+      margin-top: 6px;
+      flex-wrap: wrap;
+    }
+    .chip {
+      background-color: #eee;
+      border: 1px solid #ccc;
+      border-radius: 16px;
+      padding: 2px 10px;
+      font-size: 12px;
+      cursor: pointer;
+    }
+    .chip:hover {
+      background-color: #ddd;
+    }
+  </style>
 </head>
 <body>
   <div class="options-container">
@@ -73,7 +92,12 @@
       <section id="templates" class="content-section card">
         <div class="section-header">
           <h2 data-i18n="templates_heading">Prompt Templates</h2>
-          <button id="addTemplate" class="primary" data-i18n="add_template">Add Template</button>
+          <div class="button-group">
+            <button id="importTemplates" class="secondary" data-i18n="import_templates">Import</button>
+            <input type="file" id="importFileInput" style="display: none;" accept=".json">
+            <button id="exportTemplates" class="secondary" data-i18n="export_templates">Export</button>
+            <button id="addTemplate" class="primary" data-i18n="add_template">Add Template</button>
+          </div>
         </div>
         <div id="templateList" class="list"></div>
       </section>
@@ -114,10 +138,19 @@
               <option value="answer" data-i18n="action_answer">Answer</option>
               <option value="rewrite" data-i18n="action_rewrite">Rewrite</option>
               <option value="translate" data-i18n="action_translate">Translate</option>
+              <option value="code" data-i18n="action_code">Code</option>
+              <option value="summarize" data-i18n="action_summarize">Summarize</option>
             </select>
           </label>
           <label><span data-i18n="modal_label_template_name">Template Name</span><input id="modal_template_name" required /></label>
-          <label><span data-i18n="modal_label_template_text">Template Text</span><textarea id="modal_template_text" rows="4"></textarea></label>
+          <label>
+            <span data-i18n="modal_label_template_text">Template Text</span>
+            <textarea id="modal_template_text" rows="4"></textarea>
+          </label>
+          <div class="variable-chips">
+            <button type="button" data-variable="{{selectedText}}" class="chip">{{selectedText}}</button>
+            <button type="button" data-variable="{{targetLang}}" class="chip">{{targetLang}}</button>
+          </div>
         </div>
 
         <div class="row actions" style="margin-top:16px">

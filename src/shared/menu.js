@@ -53,7 +53,9 @@ export const PLATFORMS = [
 export const ACTIONS = [
     { key: 'answer', name: 'action_answer' },
     { key: 'rewrite', name: 'action_rewrite' },
-    { key: 'translate', name: 'action_translate' }
+    { key: 'translate', name: 'action_translate' },
+    { key: 'code', name: 'action_code' },
+    { key: 'summarize', name: 'action_summarize' }
 ];
 
 export const DEFAULT_TEMPLATES = {
@@ -71,5 +73,11 @@ export const DEFAULT_TEMPLATES = {
         { name: 'template_translate_quick', text: 'template_translate_quick_text' },
         { name: 'template_translate_formal', text: 'template_translate_formal_text' },
         { name: 'template_translate_casual', text: 'template_translate_casual_text' },
+    ],
+    code: [
+        { name: 'template_code_explain', text: 'template_code_explain_text' },
+    ],
+    summarize: [
+        { name: 'template_summarize_bullets', text: 'template_summarize_bullets_text' },
     ],
 };
