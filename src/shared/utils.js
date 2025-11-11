@@ -39,27 +39,42 @@ function _do_in_page_script(platform, prompt) {
             clearInterval(intervalId);
             inputEl.focus();
 
+            // For modern web apps (React, etc.), setting .value directly doesn't always work.
+            // We need to simulate a user input event more reliably.
             const isContentEditable = inputEl.contentEditable === 'true';
 
             if (isContentEditable) {
+                // This method works well for contentEditable divs
                 inputEl.innerHTML = prompt.replace(/\n/g, '<br>');
             } else {
-                inputEl.value = prompt;
+                // **This is the key fix for React-based inputs (like ChatGPT)**
+                const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
+                    window.HTMLTextAreaElement.prototype, 
+                    'value'
+                ).set;
+                nativeInputValueSetter.call(inputEl, prompt);
             }
 
-            // Dispatch events to make sure the page recognizes the input
+            // Dispatch events to make the page's framework (React, etc.) recognize the change
             inputEl.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
             inputEl.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
 
+            // A short delay before clicking send allows the web app to process the input
             if (sendSelector) {
                 setTimeout(() => {
                     const sendBtn = document.querySelector(sendSelector);
                     if (sendBtn && !sendBtn.disabled) {
                         sendBtn.click();
                     } else {
-                        console.warn(`[Send-to-AI] Send button not found or disabled for selector: \"${sendSelector}\"`);
+                        // Sometimes the button is found but not clickable yet, retry once.
+                        setTimeout(() => {
+                            const finalSendBtn = document.querySelector(sendSelector);
+                            if (finalSendBtn && !finalSendBtn.disabled) {
+                                finalSendBtn.click();
+                            }
+                        }, 500);
                     }
-                }, 700); // A delay to allow any client-side logic to process the input
+                }, 700); 
             }
         } else {
             attempt++;
