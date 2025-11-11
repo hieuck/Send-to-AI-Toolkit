@@ -93,6 +93,8 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
         const platform = store.platforms.find(p => p.key === platformKey);
         if (!platform) return;
 
+        console.log('---DEBUG (background.js)--- Platform found:', JSON.stringify(platform));
+
         let templateText = '{{selectedText}}';
         if (store.templates && store.templates[actionKey]) {
             const template = store.templates[actionKey].find(t => t.id === templateId);
@@ -114,6 +116,8 @@ chrome.contextMenus.onClicked.addListener(async (info, tab) => {
 
         const platform = store.platforms.find(p => p.key === platformKey);
         if (!platform) return;
+        
+        console.log('---DEBUG (background.js)--- Platform found:', JSON.stringify(platform));
 
         // Find the action to get the default template
         const action = ACTIONS.find(a => a.key === actionKey);

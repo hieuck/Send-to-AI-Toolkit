@@ -248,6 +248,8 @@ function initModal(){
       platform.inputSelector = document.getElementById('modal_platform_input_selector').value.trim();
       platform.sendSelector = document.getElementById('modal_platform_send_selector').value.trim();
 
+      console.log('---DEBUG (options.js)--- Saving platform:', JSON.stringify(platform));
+
       await chrome.storage.sync.set({platforms: store.platforms});
     } else if(mode === 'template'){
       const name = document.getElementById('modal_template_name').value.trim();
