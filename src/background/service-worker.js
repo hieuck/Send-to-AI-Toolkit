@@ -1,5 +1,6 @@
 import { PLATFORMS, ACTIONS, DEFAULT_TEMPLATES } from '../shared/menu.js';
-import { geti18n, __ } from '../shared/i18n.js';
+import { assemblePrompt } from '../shared/utils.js';
+import { fetchMessages, getMessage } from '../shared/i18n.js';
 
 // --- Menu Creation ---
 
@@ -16,7 +17,7 @@ function createContextMenu() {
             chrome.contextMenus.create({
                 id: parentId,
                 parentId: 'send-to-ai-toolkit',
-                title: __(platform.name),
+                title: `__MSG_${platform.name}__`,
                 contexts: ['selection']
             });
 
@@ -24,7 +25,7 @@ function createContextMenu() {
                 chrome.contextMenus.create({
                     id: `${parentId}-${action.key}`,
                     parentId: parentId,
-                    title: __(action.name),
+                    title: `__MSG_${action.name}__`,
                     contexts: ['selection']
                 });
             });
@@ -38,7 +39,7 @@ chrome.runtime.onInstalled.addListener(() => {
     createContextMenu();
 });
 
-chrome.contextMenus.onClicked.addListener((info, tab) => {
+chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     const { menuItemId, selectionText } = info;
     const [platformId, actionKey] = menuItemId.replace('platform-', '').split('-');
 
@@ -50,30 +51,27 @@ chrome.contextMenus.onClicked.addListener((info, tab) => {
         if (action) {
             const template = DEFAULT_TEMPLATES[action.key][0];
             if (template) {
-                text = __(template.text, selectionText);
+                const store = await chrome.storage.sync.get({ settings: { defaultLang: 'English', locale: 'en' } });
+                await fetchMessages(store.settings.locale || 'en');
+                const targetLang = store.settings.defaultLang;
+                const templateText = getMessage(template.text);
+                text = assemblePrompt(templateText, { selectedText: selectionText, targetLang: targetLang });
             }
         }
 		
         // Create the tab
         chrome.tabs.create({ url: platform.url }, newTab => {
-            // We need to wait for the tab to be fully loaded before sending the message
-            const listener = (tabId, changeInfo, tab) => {
+            const listener = (tabId, changeInfo) => {
                 if (tabId === newTab.id && changeInfo.status === 'complete') {
-                    console.log(`[Send-to-AI] Tab ${tabId} loaded. Sending execute message.`);
-                    
-                    // Send the message to the content script
                     chrome.tabs.sendMessage(tabId, {
                         action: 'execute',
                         text: text,
                         inputSelector: platform.inputSelector,
                         sendSelector: platform.sendSelector
                     });
-
-                    // Remove the listener to avoid it firing again
                     chrome.tabs.onUpdated.removeListener(listener);
                 }
             };
-
             chrome.tabs.onUpdated.addListener(listener);
         });
     }
