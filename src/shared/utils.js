@@ -19,17 +19,18 @@ export function assemblePrompt(template, data) {
             if (val && typeof val === 'object' && k in val) {
                 val = val[k];
             } else {
-                return match;
+                return match; // Keep {{...}} if data not found
             }
         }
         return val;
     });
 }
 
+// This function is injected into the target page to interact with the DOM
 function _do_in_page_script(platform, prompt) {
     const { inputSelector, sendSelector } = platform;
     let attempt = 0;
-    const maxAttempts = 40; 
+    const maxAttempts = 40; // Try for up to 16 seconds
     const interval = 400;
 
     const intervalId = setInterval(() => {
@@ -46,6 +47,7 @@ function _do_in_page_script(platform, prompt) {
                 inputEl.value = prompt;
             }
 
+            // Dispatch events to make sure the page recognizes the input
             inputEl.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
             inputEl.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
 
@@ -57,7 +59,7 @@ function _do_in_page_script(platform, prompt) {
                     } else {
                         console.warn(`[Send-to-AI] Send button not found or disabled for selector: \"${sendSelector}\"`);
                     }
-                }, 700);
+                }, 700); // A delay to allow any client-side logic to process the input
             }
         } else {
             attempt++;
@@ -69,67 +71,71 @@ function _do_in_page_script(platform, prompt) {
     }, interval);
 }
 
+// Injects the script into the tab, handling cases where the tab is still loading.
 function injectScript(tabId, platform, prompt) {
-    // First, check the status of the tab
-    chrome.tabs.get(tabId, (tab) => {
-        if (chrome.runtime.lastError) {
-            console.error(`[Send-to-AI] Error getting tab: ${chrome.runtime.lastError.message}`);
-            return;
-        }
+    const listener = (updatedTabId, changeInfo, updatedTab) => {
+        // Inject script only when the tab has finished loading and has a URL
+        if (updatedTabId === tabId && changeInfo.status === 'complete' && updatedTab.url) {
+            try {
+                const targetUrl = new URL(platform.url);
+                const currentUrl = new URL(updatedTab.url);
 
-        if (tab.status === 'complete') {
-            // If the tab is already loaded, inject the script immediately
-            chrome.scripting.executeScript({
-                target: { tabId: tabId },
-                function: _do_in_page_script,
-                args: [platform, prompt],
-            }).catch(err => console.error('[Send-to-AI] Immediate script injection failed:', err));
-        } else {
-            // If the tab is still loading, add a listener to inject when it's complete
-            const listener = (updatedTabId, changeInfo, updatedTab) => {
-                if (updatedTabId === tabId && changeInfo.status === 'complete') {
-                    // Ensure the URL of the updated tab matches the intended URL before injecting
-                    if (updatedTab.url && updatedTab.url.startsWith(platform.url)) {
-                        chrome.scripting.executeScript({
-                            target: { tabId: tabId },
-                            function: _do_in_page_script,
-                            args: [platform, prompt],
-                        }).catch(err => console.error('[Send-to-AI] Deferred script injection failed:', err));
-                        
-                        chrome.tabs.onUpdated.removeListener(listener); // Clean up the listener
-                    }
+                // **Robust URL Check:** 
+                // 1. Origins must match (e.g., https://gemini.google.com)
+                // 2. The current page's path must START WITH the configured path (e.g., /app/p/123 starts with /app)
+                if (targetUrl.origin === currentUrl.origin && currentUrl.pathname.startsWith(targetUrl.pathname)) {
+                    chrome.scripting.executeScript({
+                        target: { tabId: tabId },
+                        function: _do_in_page_script,
+                        args: [platform, prompt],
+                    }).catch(err => console.error('[Send-to-AI] Deferred script injection failed:', err));
+                    
+                    chrome.tabs.onUpdated.removeListener(listener); // Clean up the listener to prevent memory leaks
                 }
-            };
-            chrome.tabs.onUpdated.addListener(listener);
+            } catch (e) {
+                console.error("[Send-to-AI] Error comparing URLs:", e);
+                chrome.tabs.onUpdated.removeListener(listener); // Clean up on error too
+            }
         }
-    });
+    };
+    chrome.tabs.onUpdated.addListener(listener);
 }
 
 export function openPlatformWithPrompt(platform, prompt) {
     const { url, inputSelector } = platform;
 
+    // Case 1: No input selector. Append the prompt to the URL.
     if (!inputSelector) {
-        const destUrl = url.replace('{{prompt}}', encodeURIComponent(prompt));
+        let destUrl;
+        if (url.includes('{{prompt}}')) {
+            destUrl = url.replace('{{prompt}}', encodeURIComponent(prompt));
+        } else {
+            // **Robust URL Appending:** Check if URL already has params.
+            const separator = url.includes('?') ? '&' : '?';
+            destUrl = `${url}${separator}prompt=${encodeURIComponent(prompt)}`;
+        }
         chrome.tabs.create({ url: destUrl });
         return;
     }
 
-    // A more robust approach: Find a tab with the same origin to reuse, but force the URL.
-    chrome.tabs.query({ url: `${new URL(url).origin}/*` }, (tabs) => {
-        if (tabs.length > 0) {
-            // A tab with the same origin exists. Reuse it by updating its URL.
-            const tabToReuse = tabs[0];
-            chrome.tabs.update(tabToReuse.id, { url: url, active: true }, (tab) => {
-                if (chrome.runtime.lastError) {
-                    console.error(`[Send-to-AI] Error updating tab: ${chrome.runtime.lastError.message}`);
-                    // If update fails, fall back to creating a new tab
+    // Case 2: An input selector is defined. Open a tab and inject a script.
+    const targetOrigin = new URL(url).origin;
+
+    // Find a tab with the same origin to reuse, which is more efficient.
+    chrome.tabs.query({ url: `${targetOrigin}/*` }, (tabs) => {
+        const tabToUse = tabs.length > 0 ? tabs[0] : null;
+
+        if (tabToUse) {
+            // A tab with the same origin exists. Reuse it by updating its URL and activating it.
+            chrome.tabs.update(tabToUse.id, { url: url, active: true }, (tab) => {
+                if (tab) {
+                    injectScript(tab.id, platform, prompt);
+                } else if (chrome.runtime.lastError) {
+                     // Fallback to creating a new tab if update fails (e.g., tab was closed by user)
                     chrome.tabs.create({ url: url, active: true }, (newTab) => {
                         injectScript(newTab.id, platform, prompt);
                     });
-                    return;
                 }
-                // The injectScript function already handles waiting for the tab to be 'complete'
-                injectScript(tab.id, platform, prompt);
             });
         } else {
             // No tab with this origin exists. Create a new one.
