@@ -72,6 +72,11 @@ function _do_in_page_script(platform, prompt) {
 function injectScript(tabId, platform, prompt) {
     // First, check the status of the tab
     chrome.tabs.get(tabId, (tab) => {
+        if (chrome.runtime.lastError) {
+            console.error(`[Send-to-AI] Error getting tab: ${chrome.runtime.lastError.message}`);
+            return;
+        }
+
         if (tab.status === 'complete') {
             // If the tab is already loaded, inject the script immediately
             chrome.scripting.executeScript({
@@ -81,15 +86,18 @@ function injectScript(tabId, platform, prompt) {
             }).catch(err => console.error('[Send-to-AI] Immediate script injection failed:', err));
         } else {
             // If the tab is still loading, add a listener to inject when it's complete
-            const listener = (updatedTabId, changeInfo) => {
+            const listener = (updatedTabId, changeInfo, updatedTab) => {
                 if (updatedTabId === tabId && changeInfo.status === 'complete') {
-                    chrome.scripting.executeScript({
-                        target: { tabId: tabId },
-                        function: _do_in_page_script,
-                        args: [platform, prompt],
-                    }).catch(err => console.error('[Send-to-AI] Deferred script injection failed:', err));
-                    
-                    chrome.tabs.onUpdated.removeListener(listener); // Clean up the listener
+                    // Ensure the URL of the updated tab matches the intended URL before injecting
+                    if (updatedTab.url && updatedTab.url.startsWith(platform.url)) {
+                        chrome.scripting.executeScript({
+                            target: { tabId: tabId },
+                            function: _do_in_page_script,
+                            args: [platform, prompt],
+                        }).catch(err => console.error('[Send-to-AI] Deferred script injection failed:', err));
+                        
+                        chrome.tabs.onUpdated.removeListener(listener); // Clean up the listener
+                    }
                 }
             };
             chrome.tabs.onUpdated.addListener(listener);
@@ -106,17 +114,25 @@ export function openPlatformWithPrompt(platform, prompt) {
         return;
     }
 
-    // Check if a tab for the platform is already open with the *exact* URL
-    chrome.tabs.query({ url: url }, (tabs) => {
-        const existingTab = tabs[0]; // Get the first one if multiple exist
-
-        if (existingTab) {
-            // A tab with the exact URL exists. Activate it and inject the script.
-            chrome.tabs.update(existingTab.id, { active: true }, (tab) => {
+    // A more robust approach: Find a tab with the same origin to reuse, but force the URL.
+    chrome.tabs.query({ url: `${new URL(url).origin}/*` }, (tabs) => {
+        if (tabs.length > 0) {
+            // A tab with the same origin exists. Reuse it by updating its URL.
+            const tabToReuse = tabs[0];
+            chrome.tabs.update(tabToReuse.id, { url: url, active: true }, (tab) => {
+                if (chrome.runtime.lastError) {
+                    console.error(`[Send-to-AI] Error updating tab: ${chrome.runtime.lastError.message}`);
+                    // If update fails, fall back to creating a new tab
+                    chrome.tabs.create({ url: url, active: true }, (newTab) => {
+                        injectScript(newTab.id, platform, prompt);
+                    });
+                    return;
+                }
+                // The injectScript function already handles waiting for the tab to be 'complete'
                 injectScript(tab.id, platform, prompt);
             });
         } else {
-            // No tab with the exact URL found. Create a new one.
+            // No tab with this origin exists. Create a new one.
             chrome.tabs.create({ url: url, active: true }, (tab) => {
                 injectScript(tab.id, platform, prompt);
             });
