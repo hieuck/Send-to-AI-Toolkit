@@ -10,9 +10,8 @@ async function load() {
     await fetchMessages(store.settings.locale || 'en');
     localizePage();
 
-    // Fix: Render actions first, then platforms to ensure proper UI state on load.
-    renderActionButtons(store.templates, store.settings);
     renderPlatforms(store.platforms);
+    renderActionButtons(store.templates, store.settings);
 
     const lastInput = await chrome.storage.local.get('lastInput');
     if (lastInput.lastInput) {
@@ -50,9 +49,7 @@ function renderPlatforms(platforms) {
         });
 
         grid.appendChild(btn);
-        // Auto-select the first platform
         if (index === 0) {
-            // Use a small timeout to ensure all elements are ready before simulating the click
             setTimeout(() => btn.click(), 0);
         }
     });
@@ -61,7 +58,6 @@ function renderPlatforms(platforms) {
 function renderActionButtons(templates, settings) {
     const container = document.getElementById('actionContainer');
     container.innerHTML = '';
-    // Set initial disabled state
     container.style.opacity = '0.5';
     container.style.pointerEvents = 'none';
 
@@ -69,41 +65,56 @@ function renderActionButtons(templates, settings) {
         const actionWrapper = document.createElement('div');
         actionWrapper.className = 'action-wrapper';
 
-        const btn = document.createElement('button');
-        btn.className = 'action-btn';
-        btn.textContent = getMessage(`action_${action.key}`);
-        btn.dataset.action = action.key;
-        actionWrapper.appendChild(btn);
+        const mainBtn = document.createElement('button');
+        mainBtn.className = 'action-btn';
+        mainBtn.textContent = getMessage(`action_${action.key}`);
+        mainBtn.dataset.action = action.key;
+        actionWrapper.appendChild(mainBtn);
 
-        // Fix: Action buttons now trigger the action directly with the default template.
-        btn.addEventListener('click', () => {
-            if (!selectedPlatform) return; // a platform must be selected
-            
-            const text = document.getElementById('inputText').value.trim();
-            if (!text) {
-                document.getElementById('inputText').focus();
-                return; // require text input
-            }
+        const templateList = document.createElement('div');
+        templateList.className = 'template-list';
+        templateList.style.display = 'none'; // Initially hidden
+        actionWrapper.appendChild(templateList);
 
-            const actionTemplates = templates[action.key] || [];
-            let templateText = '{{selectedText}}'; // Fallback template
+        const actionTemplates = templates[action.key] || [];
+        if (actionTemplates.length > 0) {
+            actionTemplates.forEach(template => {
+                const templateBtn = document.createElement('button');
+                templateBtn.className = 'template-btn';
+                templateBtn.textContent = getMessage(template.name) || template.name;
+                templateList.appendChild(templateBtn);
 
-            if (actionTemplates.length > 0) {
-                // Use the first template as the default for the action button
-                const defaultTemplate = actionTemplates[0];
-                templateText = getMessage(defaultTemplate.text) || defaultTemplate.text;
-            }
+                templateBtn.addEventListener('click', () => {
+                    if (!selectedPlatform) return;
+                    const text = document.getElementById('inputText').value.trim();
+                    if (!text) {
+                        document.getElementById('inputText').focus();
+                        return;
+                    }
 
-            const prompt = assemblePrompt(templateText, { 
-                selectedText: text, 
-                targetLang: settings.defaultLang || 'English' 
+                    const templateText = getMessage(template.text) || template.text;
+                    const prompt = assemblePrompt(templateText, {
+                        selectedText: text,
+                        targetLang: settings.defaultLang || 'English'
+                    });
+                    openPlatformWithPrompt(selectedPlatform, prompt);
+                });
             });
+        } else {
+          mainBtn.disabled = true; // Disable main button if no templates exist
+        }
 
-            openPlatformWithPrompt(selectedPlatform, prompt);
+        // Toggle template list on main button click
+        mainBtn.addEventListener('click', () => {
+            // Close other open template lists
+            document.querySelectorAll('.template-list').forEach(list => {
+                if (list !== templateList) {
+                    list.style.display = 'none';
+                }
+            });
+            // Toggle current list
+            templateList.style.display = templateList.style.display === 'none' ? 'flex' : 'none';
         });
-
-        // The template list can be re-introduced later if needed, 
-        // but for now, this directly solves the user's reported issue.
 
         container.appendChild(actionWrapper);
     });
