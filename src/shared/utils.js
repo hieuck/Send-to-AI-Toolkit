@@ -69,6 +69,34 @@ function _do_in_page_script(platform, prompt) {
     }, interval);
 }
 
+function injectScript(tabId, platform, prompt) {
+    // First, check the status of the tab
+    chrome.tabs.get(tabId, (tab) => {
+        if (tab.status === 'complete') {
+            // If the tab is already loaded, inject the script immediately
+            chrome.scripting.executeScript({
+                target: { tabId: tabId },
+                function: _do_in_page_script,
+                args: [platform, prompt],
+            }).catch(err => console.error('[Send-to-AI] Immediate script injection failed:', err));
+        } else {
+            // If the tab is still loading, add a listener to inject when it's complete
+            const listener = (updatedTabId, changeInfo) => {
+                if (updatedTabId === tabId && changeInfo.status === 'complete') {
+                    chrome.scripting.executeScript({
+                        target: { tabId: tabId },
+                        function: _do_in_page_script,
+                        args: [platform, prompt],
+                    }).catch(err => console.error('[Send-to-AI] Deferred script injection failed:', err));
+                    
+                    chrome.tabs.onUpdated.removeListener(listener); // Clean up the listener
+                }
+            };
+            chrome.tabs.onUpdated.addListener(listener);
+        }
+    });
+}
+
 export function openPlatformWithPrompt(platform, prompt) {
     const { url, inputSelector } = platform;
 
@@ -92,19 +120,4 @@ export function openPlatformWithPrompt(platform, prompt) {
             });
         }
     });
-}
-
-function injectScript(tabId, platform, prompt) {
-    const listener = (updatedTabId, changeInfo) => {
-        if (updatedTabId === tabId && changeInfo.status === 'complete') {
-            chrome.scripting.executeScript({
-                target: { tabId: tabId },
-                function: _do_in_page_script,
-                args: [platform, prompt],
-            }).catch(err => console.error('[Send-to-AI] Script injection failed:', err));
-            
-            chrome.tabs.onUpdated.removeListener(listener); // Clean up the listener
-        }
-    };
-    chrome.tabs.onUpdated.addListener(listener);
 }
