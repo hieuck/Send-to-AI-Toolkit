@@ -4,11 +4,14 @@ import { fetchMessages, getMessage } from '../shared/i18n.js';
 
 // --- Menu Creation ---
 
-function createContextMenu() {
+async function createContextMenu() {
+    const store = await chrome.storage.sync.get({ settings: { locale: 'en' } });
+    await fetchMessages(store.settings.locale || 'en');
+
     chrome.contextMenus.removeAll(() => {
         chrome.contextMenus.create({
             id: 'send-to-ai-toolkit',
-            title: 'Send to AI Toolkit',
+            title: getMessage('send_to_ai_toolkit'),
             contexts: ['selection']
         });
 
@@ -17,7 +20,7 @@ function createContextMenu() {
             chrome.contextMenus.create({
                 id: parentId,
                 parentId: 'send-to-ai-toolkit',
-                title: `__MSG_${platform.name}__`,
+                title: getMessage(platform.name),
                 contexts: ['selection']
             });
 
@@ -25,7 +28,7 @@ function createContextMenu() {
                 chrome.contextMenus.create({
                     id: `${parentId}-${action.key}`,
                     parentId: parentId,
-                    title: `__MSG_${action.name}__`,
+                    title: getMessage(action.name),
                     contexts: ['selection']
                 });
             });
