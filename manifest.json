@@ -2,17 +2,16 @@
   "manifest_version": 3,
   "name": "__MSG_extension_name__",
   "description": "__MSG_extension_description__",
-  "version": "0.2.0",
+  "version": "0.2.2",
   "default_locale": "vi",
   "icons": {
-    "16": "src/assets/icons/icon.svg",
-    "48": "src/assets/icons/icon.svg",
-    "128": "src/assets/icons/icon.svg"
+    "16": "src/assets/icons/icon16.svg",
+    "48": "src/assets/icons/icon48.svg",
+    "128": "src/assets/icons/icon128.svg"
   },
   "permissions": [
     "contextMenus",
-    "storage",
-    "tabs"
+    "storage",n    "tabs"
   ],
   "host_permissions": [
     "https://chatgpt.com/*",
@@ -29,8 +28,8 @@
   "action": {
     "default_popup": "src/popup/popup.html",
     "default_icon": {
-      "16": "src/assets/icons/icon.svg",
-      "48": "src/assets/icons/icon.svg"
+      "16": "src/assets/icons/icon16.svg",
+      "48": "src/assets/icons/icon48.svg"
     }
   },
   "options_page": "src/options/options.html",
