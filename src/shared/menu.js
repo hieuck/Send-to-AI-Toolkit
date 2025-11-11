@@ -5,43 +5,57 @@ export const PLATFORMS = [
     key: "chatgpt",
     name: "platform_chatgpt",
     url: "https://chatgpt.com/",
-    domainPatterns: ["chatgpt.com", "chat.openai.com"]
+    domainPatterns: ["chatgpt.com", "chat.openai.com"],
+    inputSelector: '#prompt-textarea',
+    sendSelector: '[data-testid="send-button"]'
   },
   {
     key: "gemini",
     name: "platform_gemini",
     url: "https://gemini.google.com/",
-    domainPatterns: ["gemini.google.com"]
+    domainPatterns: ["gemini.google.com"],
+    inputSelector: 'div.ql-editor[contenteditable="true"]',
+    sendSelector: 'button.send-button'
   },
   {
     key: "claude",
     name: "platform_claude",
     url: "https://claude.ai/",
-    domainPatterns: ["claude.ai"]
+    domainPatterns: ["claude.ai"],
+    inputSelector: '[data-testid="chat-input"]',
+    sendSelector: '[aria-label="Send message"]'
   },
   {
     key: "poe",
     name: "platform_poe",
     url: "https://poe.com/",
-    domainPatterns: ["poe.com"]
+    domainPatterns: ["poe.com"],
+    inputSelector: 'textarea.GrowingTextArea_textArea__ZWQbP',
+    sendSelector: '[data-button-send="true"]'
   },
   {
     key: "perplexity",
     name: "platform_perplexity",
     url: "https://www.perplexity.ai/",
-    domainPatterns: ["perplexity.ai"]
+    domainPatterns: ["perplexity.ai"],
+    inputSelector: '#ask-input',
+    sendSelector: '[data-testid="submit-button"]'
   },
   {
     key: "deepseek",
     name: "platform_deepseek",
-    url: "https://deepseek.ai/",
-    domainPatterns: ["deepseek.ai"]
+    url: "https://chat.deepseek.com/",
+    domainPatterns: ["chat.deepseek.com", "deepseek.ai"],
+    inputSelector: 'textarea._27c9245',
+    sendSelector: 'div._7436101'
   },
   {
     key: "grok",
     name: "platform_grok",
     url: "https://grok.com/",
-    domainPatterns: ["grok.com"]
+    domainPatterns: ["grok.com"],
+    inputSelector: 'div.tiptap.ProseMirror',
+    sendSelector: '[aria-label="Gửi"]'
   }
 ];
 
