@@ -67,8 +67,11 @@ async function load(){
     const existingNames = new Set(templates[action].map(t => t.name));
     const newDefaults = DEFAULT_TEMPLATES[action].filter(t => !existingNames.has(t.name));
     if (newDefaults.length > 0) {
-      templates[action].push(...newDefaults.map(t => ({...t}))); // Push copies
-      templatesModified = true;
+        newDefaults.forEach(t => {
+            // Add a unique ID based on the name for default templates
+            templates[action].push({ ...t, id: t.name }); 
+        });
+        templatesModified = true;
     }
   }
 
