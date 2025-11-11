@@ -34,23 +34,23 @@
 
       <section id="general" class="content-section card active">
         <div class="row">
-          <label for="defaultLang" data-i18n="default_translation_label">Default translation language</label>
+          <label for="defaultLang" data-i18n="default_translation_label">Default action language</label>
           <select id="defaultLang">
-            <option value="English" data-i18n="lang_english">English</option>
-            <option value="Vietnamese" data-i18n="lang_vietnamese">Vietnamese</option>
-            <option value="Spanish" data-i18n="lang_spanish">Spanish</option>
-            <option value="French" data-i18n="lang_french">French</option>
-            <option value="German" data-i18n="lang_german">German</option>
-            <option value="Chinese (Simplified)" data-i18n="lang_chinese_simplified">Chinese (Simplified)</option>
-            <option value="Chinese (Traditional)" data-i18n="lang_chinese_traditional">Chinese (Traditional)</option>
-            <option value="Japanese" data-i18n="lang_japanese">Japanese</option>
-            <option value="Korean" data-i18n="lang_korean">Korean</option>
-            <option value="Portuguese" data-i18n="lang_portuguese">Portuguese</option>
-            <option value="Russian" data-i18n="lang_russian">Russian</option>
-            <option value="Arabic" data-i18n="lang_arabic">Arabic</option>
-            <option value="Hindi" data-i18n="lang_hindi">Hindi</option>
-            <option value="Italian" data-i18n="lang_italian">Italian</option>
-            <option value="Dutch" data-i18n="lang_dutch">Dutch</option>
+            <option value="English" data-i18n="lang_en">English</option>
+            <option value="Vietnamese" data-i18n="lang_vi">Vietnamese</option>
+            <option value="Spanish" data-i18n="lang_es">Spanish</option>
+            <option value="French" data-i18n="lang_fr">French</option>
+            <option value="German" data-i18n="lang_de">German</option>
+            <option value="Chinese (Simplified)" data-i18n="lang_zh_CN">Chinese (Simplified)</option>
+            <option value="Chinese (Traditional)" data-i18n="lang_zh_TW">Chinese (Traditional)</option>
+            <option value="Japanese" data-i18n="lang_ja">Japanese</option>
+            <option value="Korean" data-i18n="lang_ko">Korean</option>
+            <option value="Portuguese" data-i18n="lang_pt">Portuguese</option>
+            <option value="Russian" data-i18n="lang_ru">Russian</option>
+            <option value="Arabic" data-i18n="lang_ar">Arabic</option>
+            <option value="Hindi" data-i18n="lang_hi">Hindi</option>
+            <option value="Italian" data-i18n="lang_it">Italian</option>
+            <option value="Dutch" data-i18n="lang_nl">Dutch</option>
           </select>
         </div>
         <div class="row actions">
@@ -97,9 +97,15 @@
       <form id="modalForm">
         <div id="platformFields">
           <label><span data-i18n="modal_label_name">Name</span><input id="modal_platform_name" required /></label>
-          <label><span data-i18n="modal_label_base_url">Base URL</span><input type="url" id="modal_platform_url" data-i18n="modal_placeholder_url" data-i18n-target="placeholder" /></label>
-          <label><span data-i18n="modal_label_input_selector">Message input selector</span><input id="modal_platform_input_selector" data-i18n="modal_placeholder_input_selector" data-i18n-target="placeholder" /></label>
-          <label><span data-i18n="modal_label_send_selector">Send button selector</span><input id="modal_platform_send_selector" data-i18n="modal_placeholder_send_selector" data-i18n-target="placeholder" /></label>
+          <label>
+            <span data-i18n="modal_label_base_url">Base URL</span>
+            <div class="input-group">
+              <input type="url" id="modal_platform_url" data-i18n-placeholder="https://..." />
+              <button type="button" id="modal_open_url" class="secondary" data-i18n="open_label">Open</button>
+            </div>
+          </label>
+          <label><span data-i18n="modal_label_input_selector">Message input selector</span><input id="modal_platform_input_selector" data-i18n-placeholder="e.g. #prompt-textarea" /></label>
+          <label><span data-i18n="modal_label_send_selector">Send button selector</span><input id="modal_platform_send_selector" data-i18n-placeholder="e.g. [data-testid='send-button']" /></label>
         </div>
 
         <div id="templateFields">

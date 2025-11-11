@@ -304,6 +304,10 @@ function initModal(){
   document.getElementById('modalCancel').addEventListener('click', hideModal);
   document.getElementById('modalClose').addEventListener('click', hideModal);
   document.querySelector('#editorModal .modal-backdrop').addEventListener('click', hideModal);
+  document.getElementById('modal_open_url').addEventListener('click', ()=>{
+    const url = document.getElementById('modal_platform_url').value;
+    if(url){ window.open(url, '_blank'); }
+  });
 }
 
 async function initLocaleSwitcher(){
@@ -314,7 +318,7 @@ async function initLocaleSwitcher(){
     async function updateUI(locale) {
         await fetchMessages(locale);
         icon.textContent = locale === 'en' ? '🇻🇳' : '🇬🇧';
-        label.textContent = getMessage(`lang_${locale}`);
+        label.textContent = getMessage(locale === 'en' ? 'lang_vi' : 'lang_en');
         localizePage();
         load(); 
     }
