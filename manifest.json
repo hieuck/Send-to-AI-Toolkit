@@ -11,7 +11,8 @@
   },
   "permissions": [
     "contextMenus",
-    "storage",n    "tabs"
+    "storage",
+    "tabs"
   ],
   "host_permissions": [
     "https://chatgpt.com/*",
