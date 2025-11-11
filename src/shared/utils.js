@@ -39,38 +39,49 @@ function _do_in_page_script(platform, prompt) {
             clearInterval(intervalId);
             inputEl.focus();
 
-            // For modern web apps (React, etc.), setting .value directly doesn't always work.
-            // We need to simulate a user input event more reliably.
             const isContentEditable = inputEl.contentEditable === 'true';
 
             if (isContentEditable) {
-                // This method works well for contentEditable divs
+                // For contentEditable divs, simulating paste is complex. 
+                // Setting innerHTML and dispatching an input event is more reliable.
                 inputEl.innerHTML = prompt.replace(/\n/g, '<br>');
+                inputEl.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
             } else {
-                // **This is the key fix for React-based inputs (like ChatGPT)**
-                const nativeInputValueSetter = Object.getOwnPropertyDescriptor(
-                    window.HTMLTextAreaElement.prototype, 
-                    'value'
-                ).set;
-                nativeInputValueSetter.call(inputEl, prompt);
+                // **The robust fix for React-based inputs (like ChatGPT)**
+                // We simulate a 'paste' event, which frameworks are built to handle.
+                
+                // 1. Set the value directly. This is a fallback and helps in some scenarios.
+                inputEl.value = prompt;
+
+                // 2. Create and dispatch a 'paste' event.
+                const pasteEvent = new ClipboardEvent('paste', {
+                    clipboardData: new DataTransfer(),
+                    bubbles: true,
+                    cancelable: true,
+                    composed: true
+                });
+                pasteEvent.clipboardData.setData('text/plain', prompt);
+                inputEl.dispatchEvent(pasteEvent);
+
+                // 3. As a final confirmation, dispatch input/change events. This helps ensure 
+                // the send button becomes enabled.
+                inputEl.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+                inputEl.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
             }
 
-            // Dispatch events to make the page's framework (React, etc.) recognize the change
-            inputEl.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-            inputEl.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
-
-            // A short delay before clicking send allows the web app to process the input
             if (sendSelector) {
                 setTimeout(() => {
                     const sendBtn = document.querySelector(sendSelector);
                     if (sendBtn && !sendBtn.disabled) {
                         sendBtn.click();
                     } else {
-                        // Sometimes the button is found but not clickable yet, retry once.
+                        // Retry after a short delay, as the button might be re-enabled by React
                         setTimeout(() => {
                             const finalSendBtn = document.querySelector(sendSelector);
                             if (finalSendBtn && !finalSendBtn.disabled) {
                                 finalSendBtn.click();
+                            } else {
+                                console.warn(`[Send-to-AI] Send button was not found or was disabled. Selector: "${sendSelector}"`);
                             }
                         }, 500);
                     }
@@ -80,7 +91,7 @@ function _do_in_page_script(platform, prompt) {
             attempt++;
             if (attempt >= maxAttempts) {
                 clearInterval(intervalId);
-                console.warn(`[Send-to-AI] Input element not found after ${maxAttempts} attempts. Selector: \"${inputSelector}\"`);
+                console.warn(`[Send-to-AI] Input element not found after ${maxAttempts} attempts. Selector: "${inputSelector}"`);
             }
         }
     }, interval);
