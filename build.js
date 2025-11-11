@@ -5,22 +5,20 @@ const path = require('path');
 fs.emptyDirSync('dist');
 
 // --- Manifest Processing ---
-
 // Read the original manifest file
 const manifestPath = 'manifest.json';
-let manifest = fs.readFileSync(manifestPath, 'utf8');
+let manifestContent = fs.readFileSync(manifestPath, 'utf8');
 
-// Remove 'src/' from all paths in the manifest
-manifest = manifest.replace(/"src\//g, '"');
+// Modify paths in the manifest by removing "src/"
+manifestContent = manifestContent.replace(/src\//g, '');
 
 // Write the modified manifest to the dist directory
 const distManifestPath = path.join('dist', 'manifest.json');
-fs.writeFileSync(distManifestPath, manifest);
+fs.writeFileSync(distManifestPath, manifestContent);
 
-// --- Copy Other Assets ---
+// --- Copy Assets ---
+// Copy the contents of the 'src' directory directly into 'dist'
+// This will create dist/background, dist/assets, etc.
+fs.copySync('src', 'dist');
 
-// Copy the entire 'src' directory to 'dist/src'
-fs.copySync('src', 'dist/src');
-
-// Copy the '_locales' directory to 'dist/_locales'
-fs.copySync('src/_locales', 'dist/_locales');
+console.log('Build successful: All files copied and paths corrected.');
