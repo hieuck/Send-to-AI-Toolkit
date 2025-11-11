@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "__MSG_extension_name__",
   "description": "__MSG_extension_description__",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "default_locale": "vi",
   "icons": {
     "16": "src/assets/icons/icon.svg",
@@ -12,12 +12,18 @@
   "permissions": [
     "contextMenus",
     "storage",
-    "activeTab",
-    "scripting"
+    "tabs"
   ],
-  "host_permissions": ["<all_urls>"],
+  "host_permissions": [
+    "https://chatgpt.com/*",
+    "https://gemini.google.com/*",
+    "https://claude.ai/*",
+    "https://www.perplexity.ai/*",
+    "https://poe.com/*",
+    "https://chat.deepseek.com/*"
+  ],
   "background": {
-    "service_worker": "src/background/background.js",
+    "service_worker": "src/background/service-worker.js",
     "type": "module"
   },
   "action": {
@@ -32,15 +38,13 @@
     {
       "matches": [
         "https://chatgpt.com/*",
-        "https://chat.openai.com/*",
-        "https://*.openai.com/*",
-        "https://*.google.com/*",
-        "https://perplexity.ai/*",
+        "https://gemini.google.com/*",
+        "https://claude.ai/*",
+        "https://www.perplexity.ai/*",
         "https://poe.com/*",
-        "https://*.claude.ai/*",
-        "https://grok.com/*"
+        "https://chat.deepseek.com/*"
       ],
-      "js": ["src/content/content.js"],
+      "js": ["src/content/utils.js", "src/content/content_script.js"],
       "run_at": "document_idle"
     }
   ],
