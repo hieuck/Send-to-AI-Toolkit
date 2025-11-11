@@ -77,7 +77,21 @@ function renderActionButtons(templates, settings) {
         actionWrapper.appendChild(templateList);
 
         const actionTemplates = templates[action.key] || [];
+        
+        // If there are templates, the main button should toggle the list.
+        // Each item in the list will have its own action.
         if (actionTemplates.length > 0) {
+            mainBtn.addEventListener('click', () => {
+                // Close other open template lists
+                document.querySelectorAll('.template-list').forEach(list => {
+                    if (list !== templateList) {
+                        list.style.display = 'none';
+                    }
+                });
+                // Toggle current list
+                templateList.style.display = templateList.style.display === 'none' ? 'flex' : 'none';
+            });
+
             actionTemplates.forEach(template => {
                 const templateBtn = document.createElement('button');
                 templateBtn.className = 'template-btn';
@@ -101,7 +115,7 @@ function renderActionButtons(templates, settings) {
                 });
             });
         } else {
-            // Keep the main button enabled, but clicking it will just send the text directly
+            // If there are no templates, the main button itself should perform the action.
             mainBtn.addEventListener('click', () => {
                  if (!selectedPlatform) return;
                     const text = document.getElementById('inputText').value.trim();
@@ -113,18 +127,6 @@ function renderActionButtons(templates, settings) {
                 openPlatformWithPrompt(selectedPlatform, text);
             });
         }
-
-        // Toggle template list on main button click
-        mainBtn.addEventListener('click', () => {
-            // Close other open template lists
-            document.querySelectorAll('.template-list').forEach(list => {
-                if (list !== templateList) {
-                    list.style.display = 'none';
-                }
-            });
-            // Toggle current list
-            templateList.style.display = templateList.style.display === 'none' ? 'flex' : 'none';
-        });
 
         container.appendChild(actionWrapper);
     });
