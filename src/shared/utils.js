@@ -28,48 +28,55 @@ export function assemblePrompt(template, data) {
 
 // This function is injected into the target page to interact with the DOM.
 function _do_in_page_script(platform, prompt) {
-    const inputEl = document.querySelector(platform.inputSelector);
-    if (!inputEl) {
-        console.warn(`[Send-to-AI] Input element not found with selector: "${platform.inputSelector}"`);
-        return;
-    }
+    const { inputSelector } = platform;
+    let attempt = 0;
+    const maxAttempts = 15;
+    const interval = 300;
 
-    inputEl.focus();
+    const intervalId = setInterval(() => {
+        const inputEl = document.querySelector(inputSelector);
+        if (inputEl) {
+            clearInterval(intervalId);
+            
+            inputEl.focus();
 
-    // Use a robust method to set the input value, compatible with modern frameworks.
-    const isContentEditable = inputEl.hasAttribute('contenteditable') && inputEl.getAttribute('contenteditable').toLowerCase() !== 'false';
+            const isContentEditable = inputEl.hasAttribute('contenteditable') && inputEl.getAttribute('contenteditable').toLowerCase() !== 'false';
 
-    if (isContentEditable) {
-        inputEl.innerText = prompt;
-    } else {
-        // This approach reliably sets the value for <input> and <textarea> elements,
-        // bypassing framework state management (like React) and then triggering the necessary events.
-        const elementPrototype = Object.getPrototypeOf(inputEl);
-        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(elementPrototype, 'value').set;
-        if (nativeInputValueSetter) {
-            nativeInputValueSetter.call(inputEl, prompt);
-        } else {
-            // Fallback for edge cases
-            inputEl.value = prompt;
-        }
-    }
-
-    // Dispatch events to ensure the page's JavaScript framework detects the change.
-    inputEl.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-    inputEl.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
-
-    if (platform.sendSelector) {
-        setTimeout(() => {
-            const sendBtn = document.querySelector(platform.sendSelector);
-            if (sendBtn && !sendBtn.disabled) {
-                sendBtn.click();
-            } else if (sendBtn) {
-                console.warn(`[Send-to-AI] Send button is disabled for selector: "${platform.sendSelector}"`);
+            if (isContentEditable) {
+                inputEl.innerText = prompt;
             } else {
-                console.warn(`[Send-to-AI] Send button not found with selector: "${platform.sendSelector}"`);
+                const elementPrototype = Object.getPrototypeOf(inputEl);
+                const nativeInputValueSetter = Object.getOwnPropertyDescriptor(elementPrototype, 'value').set;
+                if (nativeInputValueSetter) {
+                    nativeInputValueSetter.call(inputEl, prompt);
+                } else {
+                    inputEl.value = prompt;
+                }
             }
-        }, 200);
-    }
+
+            inputEl.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+            inputEl.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
+
+            if (platform.sendSelector) {
+                setTimeout(() => {
+                    const sendBtn = document.querySelector(platform.sendSelector);
+                    if (sendBtn && !sendBtn.disabled) {
+                        sendBtn.click();
+                    } else if (sendBtn) {
+                        console.warn(`[Send-to-AI] Send button is disabled for selector: "${platform.sendSelector}"`);
+                    } else {
+                        console.warn(`[Send-to-AI] Send button not found with selector: "${platform.sendSelector}"`);
+                    }
+                }, 200);
+            }
+        } else {
+            attempt++;
+            if (attempt >= maxAttempts) {
+                clearInterval(intervalId);
+                console.warn(`[Send-to-AI] Input element not found after ${maxAttempts} attempts. Selector: "${inputSelector}"`);
+            }
+        }
+    }, interval);
 }
 
 
