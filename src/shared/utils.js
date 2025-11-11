@@ -39,35 +39,28 @@ function _do_in_page_script(platform, prompt) {
             clearInterval(intervalId);
             inputEl.focus();
 
-            const isContentEditable = inputEl.contentEditable === 'true';
+            // --- The Definitive Fix for ChatGPT & other complex SPAs ---
+            // We simulate a 'paste' event, which is the most reliable way to inject text
+            // as frameworks like React are built to handle this event natively.
 
-            if (isContentEditable) {
-                // For contentEditable divs, simulating paste is complex. 
-                // Setting innerHTML and dispatching an input event is more reliable.
-                inputEl.innerHTML = prompt.replace(/\n/g, '<br>');
-                inputEl.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-            } else {
-                // **The robust fix for React-based inputs (like ChatGPT)**
-                // We simulate a 'paste' event, which frameworks are built to handle.
-                
-                // 1. Set the value directly. This is a fallback and helps in some scenarios.
-                inputEl.value = prompt;
+            // 1. Create a 'paste' event.
+            const pasteEvent = new ClipboardEvent('paste', {
+                clipboardData: new DataTransfer(),
+                bubbles: true,
+                cancelable: true,
+                composed: true
+            });
 
-                // 2. Create and dispatch a 'paste' event.
-                const pasteEvent = new ClipboardEvent('paste', {
-                    clipboardData: new DataTransfer(),
-                    bubbles: true,
-                    cancelable: true,
-                    composed: true
-                });
-                pasteEvent.clipboardData.setData('text/plain', prompt);
-                inputEl.dispatchEvent(pasteEvent);
+            // 2. Set the data for the event.
+            pasteEvent.clipboardData.setData('text/plain', prompt);
 
-                // 3. As a final confirmation, dispatch input/change events. This helps ensure 
-                // the send button becomes enabled.
-                inputEl.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-                inputEl.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
-            }
+            // 3. Dispatch the event to the input element.
+            inputEl.dispatchEvent(pasteEvent);
+
+            // 4. Dispatch `input` and `change` events afterwards to ensure any listeners
+            // for the send button's state are correctly triggered.
+            inputEl.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+            inputEl.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
 
             if (sendSelector) {
                 setTimeout(() => {
@@ -75,13 +68,13 @@ function _do_in_page_script(platform, prompt) {
                     if (sendBtn && !sendBtn.disabled) {
                         sendBtn.click();
                     } else {
-                        // Retry after a short delay, as the button might be re-enabled by React
+                        // Retry after a short delay, as the button might be re-enabled by the framework
                         setTimeout(() => {
                             const finalSendBtn = document.querySelector(sendSelector);
                             if (finalSendBtn && !finalSendBtn.disabled) {
                                 finalSendBtn.click();
                             } else {
-                                console.warn(`[Send-to-AI] Send button was not found or was disabled. Selector: "${sendSelector}"`);
+                                console.warn(`[Send-to-AI] Send button not found or disabled. Selector: "${sendSelector}"`);
                             }
                         }, 500);
                     }
@@ -100,15 +93,11 @@ function _do_in_page_script(platform, prompt) {
 // Injects the script into the tab, handling cases where the tab is still loading.
 function injectScript(tabId, platform, prompt) {
     const listener = (updatedTabId, changeInfo, updatedTab) => {
-        // Inject script only when the tab has finished loading and has a URL
         if (updatedTabId === tabId && changeInfo.status === 'complete' && updatedTab.url) {
             try {
                 const targetUrl = new URL(platform.url);
                 const currentUrl = new URL(updatedTab.url);
 
-                // **Robust URL Check:** 
-                // 1. Origins must match (e.g., https://gemini.google.com)
-                // 2. The current page's path must START WITH the configured path (e.g., /app/p/123 starts with /app)
                 if (targetUrl.origin === currentUrl.origin && currentUrl.pathname.startsWith(targetUrl.pathname)) {
                     chrome.scripting.executeScript({
                         target: { tabId: tabId },
@@ -116,11 +105,11 @@ function injectScript(tabId, platform, prompt) {
                         args: [platform, prompt],
                     }).catch(err => console.error('[Send-to-AI] Deferred script injection failed:', err));
                     
-                    chrome.tabs.onUpdated.removeListener(listener); // Clean up the listener to prevent memory leaks
+                    chrome.tabs.onUpdated.removeListener(listener);
                 }
             } catch (e) {
                 console.error("[Send-to-AI] Error comparing URLs:", e);
-                chrome.tabs.onUpdated.removeListener(listener); // Clean up on error too
+                chrome.tabs.onUpdated.removeListener(listener);
             }
         }
     };
@@ -130,13 +119,11 @@ function injectScript(tabId, platform, prompt) {
 export function openPlatformWithPrompt(platform, prompt) {
     const { url, inputSelector } = platform;
 
-    // Case 1: No input selector. Append the prompt to the URL.
     if (!inputSelector) {
         let destUrl;
         if (url.includes('{{prompt}}')) {
             destUrl = url.replace('{{prompt}}', encodeURIComponent(prompt));
         } else {
-            // **Robust URL Appending:** Check if URL already has params.
             const separator = url.includes('?') ? '&' : '?';
             destUrl = `${url}${separator}prompt=${encodeURIComponent(prompt)}`;
         }
@@ -144,27 +131,22 @@ export function openPlatformWithPrompt(platform, prompt) {
         return;
     }
 
-    // Case 2: An input selector is defined. Open a tab and inject a script.
     const targetOrigin = new URL(url).origin;
 
-    // Find a tab with the same origin to reuse, which is more efficient.
     chrome.tabs.query({ url: `${targetOrigin}/*` }, (tabs) => {
         const tabToUse = tabs.length > 0 ? tabs[0] : null;
 
         if (tabToUse) {
-            // A tab with the same origin exists. Reuse it by updating its URL and activating it.
             chrome.tabs.update(tabToUse.id, { url: url, active: true }, (tab) => {
                 if (tab) {
                     injectScript(tab.id, platform, prompt);
                 } else if (chrome.runtime.lastError) {
-                     // Fallback to creating a new tab if update fails (e.g., tab was closed by user)
                     chrome.tabs.create({ url: url, active: true }, (newTab) => {
                         injectScript(newTab.id, platform, prompt);
                     });
                 }
             });
         } else {
-            // No tab with this origin exists. Create a new one.
             chrome.tabs.create({ url: url, active: true }, (tab) => {
                 injectScript(tab.id, platform, prompt);
             });
