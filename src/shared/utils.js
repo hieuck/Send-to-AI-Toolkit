@@ -1,3 +1,4 @@
+
 export function getMsg(key, ...args) {
     if (chrome && chrome.i18n && chrome.i18n.getMessage) {
         return chrome.i18n.getMessage(key, args);
@@ -127,22 +128,33 @@ export function openPlatformWithPrompt(platform, prompt) {
 
     const targetOrigin = new URL(url).origin;
 
+    // Query for all tabs matching the origin
     chrome.tabs.query({ url: `${targetOrigin}/*` }, (tabs) => {
-        const tabToUse = tabs.length > 0 ? tabs[0] : null;
+        // Find an active tab in the current window first. This is the best candidate.
+        const activeTabInCurrentWindow = tabs.find(t => t.active && t.windowId === chrome.windows.WINDOW_ID_CURRENT);
+        
+        // If no active tab, fall back to the first tab found in any window.
+        const tabToUse = activeTabInCurrentWindow || (tabs.length > 0 ? tabs[0] : null);
 
         if (tabToUse) {
-            chrome.tabs.update(tabToUse.id, { url: url, active: true }, (tab) => {
-                if (tab) {
-                    injectScript(tab.id, platform, prompt);
+            // We found a tab to reuse. Update its URL and make it active.
+            chrome.tabs.update(tabToUse.id, { url: url, active: true }, (updatedTab) => {
+                if (updatedTab) {
+                    // Inject the script into the now-updated and active tab.
+                    injectScript(updatedTab.id, platform, prompt);
                 } else if (chrome.runtime.lastError) {
+                    // This can happen if the tab was closed between query and update.
+                    // In this case, create a new tab as a fallback.
+                    console.warn(`[Send-to-AI] Failed to update tab ${tabToUse.id}. It may have been closed. Creating a new one.`);
                     chrome.tabs.create({ url: url, active: true }, (newTab) => {
                         injectScript(newTab.id, platform, prompt);
                     });
                 }
             });
         } else {
-            chrome.tabs.create({ url: url, active: true }, (tab) => {
-                injectScript(tab.id, platform, prompt);
+            // No suitable tab found, so create a new one.
+            chrome.tabs.create({ url: url, active: true }, (newTab) => {
+                injectScript(newTab.id, platform, prompt);
             });
         }
     });
