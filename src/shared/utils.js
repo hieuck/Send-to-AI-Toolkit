@@ -29,8 +29,8 @@ export function assemblePrompt(template, data) {
 function _do_in_page_script(platform, prompt) {
     const { inputSelector, sendSelector } = platform;
     let attempt = 0;
-    const maxAttempts = 20; 
-    const interval = 300;
+    const maxAttempts = 40; 
+    const interval = 400;
 
     const intervalId = setInterval(() => {
         const inputEl = document.querySelector(inputSelector);
@@ -57,7 +57,7 @@ function _do_in_page_script(platform, prompt) {
                     } else {
                         console.warn(`[Send-to-AI] Send button not found or disabled for selector: \"${sendSelector}\"`);
                     }
-                }, 500);
+                }, 700);
             }
         } else {
             attempt++;
