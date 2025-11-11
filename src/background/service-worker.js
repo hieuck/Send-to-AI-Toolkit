@@ -17,10 +17,7 @@ async function createContextMenu() {
         chrome.contextMenus.create({
             id: 'send-to-ai-toolkit',
             title: getMessage('send_to_ai_toolkit'),
-            contexts: ['selection'],
-            icons: {
-                '16': 'src/assets/icons/icon16.svg'
-            }
+            contexts: ['selection']
         });
 
         // Build menu from user-configured platforms
