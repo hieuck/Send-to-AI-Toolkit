@@ -27,9 +27,9 @@ export function assemblePrompt(template, data) {
 }
 
 function _do_in_page_script(platform, prompt) {
-    const { inputSelector } = platform;
+    const { inputSelector, sendSelector } = platform;
     let attempt = 0;
-    const maxAttempts = 15;
+    const maxAttempts = 20; 
     const interval = 300;
 
     const intervalId = setInterval(() => {
@@ -38,31 +38,26 @@ function _do_in_page_script(platform, prompt) {
             clearInterval(intervalId);
             inputEl.focus();
 
-            const isContentEditable = inputEl.hasAttribute('contenteditable') && inputEl.getAttribute('contenteditable').toLowerCase() !== 'false';
+            const isContentEditable = inputEl.contentEditable === 'true';
 
             if (isContentEditable) {
-                // Correct method for rich text editors (like Gemini)
                 inputEl.innerHTML = prompt.replace(/\n/g, '<br>');
             } else {
-                // Simple and reliable method for textareas (like ChatGPT)
                 inputEl.value = prompt;
             }
 
-            // Dispatch events to ensure the page's framework detects the change
             inputEl.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
             inputEl.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
 
-            if (platform.sendSelector) {
+            if (sendSelector) {
                 setTimeout(() => {
-                    const sendBtn = document.querySelector(platform.sendSelector);
+                    const sendBtn = document.querySelector(sendSelector);
                     if (sendBtn && !sendBtn.disabled) {
                         sendBtn.click();
-                    } else if (sendBtn) {
-                        console.warn(`[Send-to-AI] Send button is disabled for selector: "${platform.sendSelector}"`);
                     } else {
-                        console.warn(`[Send-to-AI] Send button not found with selector: "${platform.sendSelector}"`);
+                        console.warn(`[Send-to-AI] Send button not found or disabled for selector: "${sendSelector}"`);
                     }
-                }, 500); // Increased delay for safety
+                }, 500);
             }
         } else {
             attempt++;
@@ -74,27 +69,42 @@ function _do_in_page_script(platform, prompt) {
     }, interval);
 }
 
-
 export function openPlatformWithPrompt(platform, prompt) {
     const { url, inputSelector } = platform;
 
-    if (inputSelector) {
-        chrome.tabs.create({ url: url }, (tab) => {
-            const listener = (tabId, changeInfo) => {
-                if (tabId === tab.id && changeInfo.status === 'complete') {
-                    chrome.scripting.executeScript({
-                        target: { tabId: tab.id },
-                        function: _do_in_page_script,
-                        args: [platform, prompt],
-                    }).catch(err => console.error('[Send-to-AI] Script injection failed:', err));
-                    
-                    chrome.tabs.onUpdated.removeListener(listener);
-                }
-            };
-            chrome.tabs.onUpdated.addListener(listener);
-        });
-    } else {
+    if (!inputSelector) {
         const destUrl = url.replace('{{prompt}}', encodeURIComponent(prompt));
         chrome.tabs.create({ url: destUrl });
+        return;
     }
+
+    // Check if a tab for the platform is already open
+    chrome.tabs.query({ url: `${new URL(url).origin}/*` }, (tabs) => {
+        const existingTab = tabs.find(t => t.url.startsWith(url));
+
+        if (existingTab) {
+            chrome.tabs.update(existingTab.id, { active: true }, (tab) => {
+                injectScript(tab.id, platform, prompt);
+            });
+        } else {
+            chrome.tabs.create({ url: url, active: true }, (tab) => {
+                injectScript(tab.id, platform, prompt);
+            });
+        }
+    });
+}
+
+function injectScript(tabId, platform, prompt) {
+    const listener = (updatedTabId, changeInfo) => {
+        if (updatedTabId === tabId && changeInfo.status === 'complete') {
+            chrome.scripting.executeScript({
+                target: { tabId: tabId },
+                function: _do_in_page_script,
+                args: [platform, prompt],
+            }).catch(err => console.error('[Send-to-AI] Script injection failed:', err));
+            
+            chrome.tabs.onUpdated.removeListener(listener); // Clean up the listener
+        }
+    };
+    chrome.tabs.onUpdated.addListener(listener);
 }
