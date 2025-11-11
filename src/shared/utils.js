@@ -1,4 +1,3 @@
-
 export function getMsg(key, ...args) {
     if (chrome && chrome.i18n && chrome.i18n.getMessage) {
         return chrome.i18n.getMessage(key, args);
@@ -37,29 +36,24 @@ function _do_in_page_script(platform, prompt) {
         const inputEl = document.querySelector(inputSelector);
         if (inputEl) {
             clearInterval(intervalId);
+            
+            // Step 1: Focus the input element.
             inputEl.focus();
 
-            // --- The Definitive Fix for ChatGPT & other complex SPAs ---
-            // We simulate a 'paste' event, which is the most reliable way to inject text
-            // as frameworks like React are built to handle this event natively.
-
-            // 1. Create a 'paste' event.
+            // Step 2: Simulate a robust 'paste' event.
             const pasteEvent = new ClipboardEvent('paste', {
                 clipboardData: new DataTransfer(),
                 bubbles: true,
                 cancelable: true,
                 composed: true
             });
-
-            // 2. Set the data for the event.
             pasteEvent.clipboardData.setData('text/plain', prompt);
-
-            // 3. Dispatch the event to the input element.
             inputEl.dispatchEvent(pasteEvent);
 
-            // 4. Dispatch `input` and `change` events afterwards to ensure any listeners
-            // for the send button's state are correctly triggered.
+            // Step 3: Dispatch an 'input' event to ensure frameworks recognize the change.
             inputEl.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+            
+            // Step 4: Dispatch a 'change' event for final confirmation.
             inputEl.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
 
             if (sendSelector) {
