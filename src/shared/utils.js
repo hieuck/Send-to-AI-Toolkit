@@ -38,49 +38,42 @@ function _do_in_page_script(platform, prompt) {
         if (inputEl) {
             clearInterval(intervalId);
 
-            // Delay to ensure the page is fully ready for interaction.
-            setTimeout(() => {
-                // 1. Focus the input element.
-                inputEl.focus();
+            // 1. Focus & Clear
+            inputEl.focus();
+            inputEl.value = '';
+            inputEl.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
 
-                // 2. Clear the input field ("xóa hành động mặc định").
-                inputEl.value = '';
-                inputEl.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+            // 2. Set new value and dispatch events to simulate paste
+            inputEl.value = prompt;
+            const pasteEvent = new ClipboardEvent('paste', {
+                clipboardData: new DataTransfer(),
+                bubbles: true, cancelable: true, composed: true
+            });
+            pasteEvent.clipboardData.setData('text/plain', prompt);
+            inputEl.dispatchEvent(pasteEvent);
+            inputEl.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+            inputEl.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
 
-                // 3. Set the new prompt value ("dán văn bản").
-                inputEl.value = prompt;
-                
-                const pasteEvent = new ClipboardEvent('paste', {
-                    clipboardData: new DataTransfer(),
-                    bubbles: true,
-                    cancelable: true,
-                    composed: true
-                });
-                pasteEvent.clipboardData.setData('text/plain', prompt);
-                inputEl.dispatchEvent(pasteEvent);
+            // 3. Robustly find and click the send button with polling.
+            if (sendSelector) {
+                let sendAttempt = 0;
+                const maxSendAttempts = 25; // Try for 10 seconds (25 * 400ms)
+                const sendInterval = 400;
 
-                inputEl.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
-                inputEl.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
-
-                // 4. Click the send button IMMEDIATELY.
-                if (sendSelector) {
+                const sendIntervalId = setInterval(() => {
+                    sendAttempt++;
                     const sendBtn = document.querySelector(sendSelector);
-                    if (sendBtn && !sendBtn.disabled) {
-                        sendBtn.click();
-                    } else {
-                        // The button might be disabled momentarily. Retry after a short delay.
-                        setTimeout(() => {
-                            const finalSendBtn = document.querySelector(sendSelector);
-                            if (finalSendBtn && !finalSendBtn.disabled) {
-                                finalSendBtn.click();
-                            } else {
-                                console.warn(`[Send-to-AI] Send button not found or disabled. Selector: "${sendSelector}"`);
-                            }
-                        }, 400); // A small retry delay, just in case.
-                    }
-                }
-            }, 300); // 300ms delay for page to settle.
+                    const isDisabled = !sendBtn || sendBtn.disabled || sendBtn.getAttribute('aria-disabled') === 'true';
 
+                    if (!isDisabled) {
+                        clearInterval(sendIntervalId);
+                        sendBtn.click();
+                    } else if (sendAttempt >= maxSendAttempts) {
+                        clearInterval(sendIntervalId);
+                        console.warn(`[Send-to-AI] Send button not found or was persistently disabled. Selector: "${sendSelector}"`);
+                    }
+                }, sendInterval);
+            }
         } else {
             attempt++;
             if (attempt >= maxAttempts) {
