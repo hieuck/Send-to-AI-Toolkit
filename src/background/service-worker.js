@@ -5,7 +5,12 @@ import { fetchMessages, getMessage } from '../shared/i18n.js';
 // --- Menu Creation ---
 
 async function createContextMenu() {
-    const store = await chrome.storage.sync.get({ settings: { locale: 'en' } });
+    // Load user's settings, platforms, and templates from storage, with defaults
+    const store = await chrome.storage.sync.get({
+        platforms: PLATFORMS,
+        templates: DEFAULT_TEMPLATES,
+        settings: { locale: 'en' }
+    });
     await fetchMessages(store.settings.locale || 'en');
 
     chrome.contextMenus.removeAll(() => {
@@ -15,12 +20,15 @@ async function createContextMenu() {
             contexts: ['selection']
         });
 
-        PLATFORMS.forEach(platform => {
+        // Build menu from user-configured platforms
+        store.platforms.forEach(platform => {
             const platformId = `platform-${platform.key}`;
+            const platformName = platform.name.startsWith('platform_') ? getMessage(platform.name) : platform.name;
+
             chrome.contextMenus.create({
                 id: platformId,
                 parentId: 'send-to-ai-toolkit',
-                title: getMessage(platform.name),
+                title: platformName,
                 contexts: ['selection']
             });
 
@@ -33,12 +41,12 @@ async function createContextMenu() {
                     contexts: ['selection']
                 });
 
-                const templates = DEFAULT_TEMPLATES[action.key];
+                const templates = store.templates[action.key] || [];
                 templates.forEach((template, index) => {
                     chrome.contextMenus.create({
                         id: `${actionId}-template-${index}`,
                         parentId: actionId,
-                        title: getMessage(template.name),
+                        title: getMessage(template.name, template.name),
                         contexts: ['selection']
                     });
                 });
@@ -49,49 +57,54 @@ async function createContextMenu() {
 
 // --- Event Listeners ---
 
+// Rebuild menu on install or update
 chrome.runtime.onInstalled.addListener(() => {
     createContextMenu();
 });
 
-chrome.contextMenus.onClicked.addListener(async (info, tab) => {
-    chrome.storage.sync.get(null, (items) => {
-        console.log('[AI Toolkit] Storage dump:', items);
-        if (items.settings && items.settings.urlBase) {
-            console.log('[AI Toolkit] Saved base URL from storage:', items.settings.urlBase);
-        } else {
-            console.log('[AI Toolkit] Saved base URL from storage is null or not set.');
-        }
-    });
+// Listen for changes from the options page to rebuild the context menu
+chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+    if (request.action === 'rebuildMenu') {
+        createContextMenu();
+        sendResponse({ status: 'ok' });
+    }
+    return true; // Required for async sendResponse
+});
 
+
+chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     const { menuItemId, selectionText } = info;
+    if (!selectionText || !menuItemId.startsWith('platform-')) {
+        return;
+    }
+
     const parts = menuItemId.replace('platform-', '').split('-');
     const [platformKey, actionKey, _, templateIndex] = parts;
 
-    const platform = PLATFORMS.find(p => p.key === platformKey);
+    // Load latest data from storage to ensure we have the correct URL and templates
+    const store = await chrome.storage.sync.get({
+        platforms: PLATFORMS,
+        templates: DEFAULT_TEMPLATES,
+        settings: { defaultLang: 'English', locale: 'en' }
+    });
+
+    const platform = store.platforms.find(p => p.key === platformKey);
 
     if (platform) {
-        console.log('[AI Toolkit] Platform found:', platform);
-        console.log('[AI Toolkit] Default platform URL:', platform.url);
-    } else {
-        console.log('[AI Toolkit] Platform not found for key:', platformKey);
-    }
-
-    if (platform && selectionText) {
-		let text = selectionText;
+        let text = selectionText;
         const action = ACTIONS.find(a => a.key === actionKey);
 
         if (action && templateIndex !== undefined) {
-            const template = DEFAULT_TEMPLATES[action.key][templateIndex];
+            const template = (store.templates[action.key] || [])[Number(templateIndex)];
             if (template) {
-                const store = await chrome.storage.sync.get({ settings: { defaultLang: 'English', locale: 'en' } });
                 await fetchMessages(store.settings.locale || 'en');
                 const targetLang = store.settings.defaultLang;
-                const templateText = getMessage(template.text);
+                const templateText = getMessage(template.text, template.text);
                 text = assemblePrompt(templateText, { selectedText: selectionText, targetLang: targetLang });
             }
         }
-		
-        // Create the tab
+
+        // Create the tab using the URL from the user-configured platform
         chrome.tabs.create({ url: platform.url }, newTab => {
             const listener = (tabId, changeInfo) => {
                 if (tabId === newTab.id && changeInfo.status === 'complete') {

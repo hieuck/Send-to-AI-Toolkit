@@ -4,6 +4,15 @@ import { fetchMessages, getMessage, localizePage } from '../shared/i18n.js';
 
 const defaultState = { platforms: [], templates: DEFAULT_TEMPLATES, settings: { defaultLang: 'English', locale: 'en' } };
 
+// Helper function to notify the service worker to rebuild the context menu
+function notifyServiceWorker() {
+    chrome.runtime.sendMessage({ action: "rebuildMenu" }, (response) => {
+        if (chrome.runtime.lastError) {
+            console.error("Error sending rebuildMenu message:", chrome.runtime.lastError.message);
+        }
+    });
+}
+
 /* --- Toast notification helpers --- */
 function showToast(messageKey, { type='info', timeout=3000 } = {}){
   const container = document.getElementById('toastContainer');
@@ -110,6 +119,7 @@ async function onDeletePlatform(e){
     await chrome.storage.sync.set({platforms: store.platforms});
     load();
     showToast('settings_saved', { type:'success' });
+    notifyServiceWorker();
   }
 }
 
@@ -121,6 +131,7 @@ async function onDeleteTemplate(e){
     await chrome.storage.sync.set({templates: store.templates});
     load();
     showToast('settings_saved', { type:'success' });
+    notifyServiceWorker();
   }
 }
 
@@ -137,6 +148,7 @@ async function init(){
     store.settings.defaultLang = document.getElementById('defaultLang').value || 'English';
     await chrome.storage.sync.set({settings: store.settings});
     showToast('settings_saved', { type:'success' });
+    // No need to notify service worker as this doesn't affect menu structure
   });
 
   document.getElementById('resetSettings').addEventListener('click', async ()=>{
@@ -144,6 +156,7 @@ async function init(){
     await chrome.storage.sync.set(defaultState);
     load();
     showToast('settings_reset', { type:'success' });
+    notifyServiceWorker();
   });
 
   // "Add" button handlers
@@ -225,6 +238,7 @@ function initModal(){
     const { mode, editIdx, editAction } = modal.dataset;
     const store = await chrome.storage.sync.get(defaultState);
 
+    let changed = false;
     if(mode === 'platform'){
       const name = document.getElementById('modal_platform_name').value.trim();
       if (!name) { showToast('validation_name_required', { type: 'error' }); return; }
@@ -248,9 +262,8 @@ function initModal(){
       platform.inputSelector = document.getElementById('modal_platform_input_selector').value.trim();
       platform.sendSelector = document.getElementById('modal_platform_send_selector').value.trim();
 
-      console.log('---DEBUG (options.js)--- Saving platform:', JSON.stringify(platform));
-
       await chrome.storage.sync.set({platforms: store.platforms});
+      changed = true;
     } else if(mode === 'template'){
       const name = document.getElementById('modal_template_name').value.trim();
       const action = document.getElementById('modal_template_action').value;
@@ -276,10 +289,15 @@ function initModal(){
         }
       }
       await chrome.storage.sync.set({templates: store.templates});
+      changed = true;
     }
-    showToast('settings_saved', { type: 'success' });
-    hideModal();
-    load();
+    
+    if (changed) {
+        showToast('settings_saved', { type: 'success' });
+        hideModal();
+        load();
+        notifyServiceWorker();
+    }
   });
 
   // General modal close handlers
@@ -307,6 +325,7 @@ async function initLocaleSwitcher(){
         store.settings.locale = newLocale;
         await chrome.storage.sync.set({ settings: store.settings });
         await updateUI(newLocale);
+        notifyServiceWorker(); // Rebuild menu for new language
     });
 
     const store = await chrome.storage.sync.get(defaultState);
