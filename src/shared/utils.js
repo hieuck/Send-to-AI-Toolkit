@@ -55,7 +55,7 @@ function _do_in_page_script(platform, prompt) {
                     if (sendBtn && !sendBtn.disabled) {
                         sendBtn.click();
                     } else {
-                        console.warn(`[Send-to-AI] Send button not found or disabled for selector: "${sendSelector}"`);
+                        console.warn(`[Send-to-AI] Send button not found or disabled for selector: \"${sendSelector}\"`);
                     }
                 }, 500);
             }
@@ -63,7 +63,7 @@ function _do_in_page_script(platform, prompt) {
             attempt++;
             if (attempt >= maxAttempts) {
                 clearInterval(intervalId);
-                console.warn(`[Send-to-AI] Input element not found after ${maxAttempts} attempts. Selector: "${inputSelector}"`);
+                console.warn(`[Send-to-AI] Input element not found after ${maxAttempts} attempts. Selector: \"${inputSelector}\"`);
             }
         }
     }, interval);
@@ -106,15 +106,17 @@ export function openPlatformWithPrompt(platform, prompt) {
         return;
     }
 
-    // Check if a tab for the platform is already open
-    chrome.tabs.query({ url: `${new URL(url).origin}/*` }, (tabs) => {
-        const existingTab = tabs.find(t => t.url.startsWith(url));
+    // Check if a tab for the platform is already open with the *exact* URL
+    chrome.tabs.query({ url: url }, (tabs) => {
+        const existingTab = tabs[0]; // Get the first one if multiple exist
 
         if (existingTab) {
+            // A tab with the exact URL exists. Activate it and inject the script.
             chrome.tabs.update(existingTab.id, { active: true }, (tab) => {
                 injectScript(tab.id, platform, prompt);
             });
         } else {
+            // No tab with the exact URL found. Create a new one.
             chrome.tabs.create({ url: url, active: true }, (tab) => {
                 injectScript(tab.id, platform, prompt);
             });
