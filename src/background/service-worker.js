@@ -16,20 +16,31 @@ async function createContextMenu() {
         });
 
         PLATFORMS.forEach(platform => {
-            const parentId = `platform-${platform.key}`;
+            const platformId = `platform-${platform.key}`;
             chrome.contextMenus.create({
-                id: parentId,
+                id: platformId,
                 parentId: 'send-to-ai-toolkit',
                 title: getMessage(platform.name),
                 contexts: ['selection']
             });
 
             ACTIONS.forEach(action => {
+                const actionId = `${platformId}-${action.key}`;
                 chrome.contextMenus.create({
-                    id: `${parentId}-${action.key}`,
-                    parentId: parentId,
+                    id: actionId,
+                    parentId: platformId,
                     title: getMessage(action.name),
                     contexts: ['selection']
+                });
+
+                const templates = DEFAULT_TEMPLATES[action.key];
+                templates.forEach((template, index) => {
+                    chrome.contextMenus.create({
+                        id: `${actionId}-template-${index}`,
+                        parentId: actionId,
+                        title: getMessage(template.name),
+                        contexts: ['selection']
+                    });
                 });
             });
         });
@@ -44,15 +55,17 @@ chrome.runtime.onInstalled.addListener(() => {
 
 chrome.contextMenus.onClicked.addListener(async (info, tab) => {
     const { menuItemId, selectionText } = info;
-    const [platformId, actionKey] = menuItemId.replace('platform-', '').split('-');
+    const parts = menuItemId.replace('platform-', '').split('-');
+    const [platformKey, actionKey, _, templateIndex] = parts;
 
-    const platform = PLATFORMS.find(p => p.key === platformId);
+    const platform = PLATFORMS.find(p => p.key === platformKey);
 
     if (platform && selectionText) {
 		let text = selectionText;
         const action = ACTIONS.find(a => a.key === actionKey);
-        if (action) {
-            const template = DEFAULT_TEMPLATES[action.key][0];
+
+        if (action && templateIndex !== undefined) {
+            const template = DEFAULT_TEMPLATES[action.key][templateIndex];
             if (template) {
                 const store = await chrome.storage.sync.get({ settings: { defaultLang: 'English', locale: 'en' } });
                 await fetchMessages(store.settings.locale || 'en');

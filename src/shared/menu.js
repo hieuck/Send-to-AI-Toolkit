@@ -65,10 +65,11 @@ export const DEFAULT_TEMPLATES = {
     rewrite: [
         { name: 'template_rewrite_quick', text: 'template_rewrite_quick_text' },
         { name: 'template_rewrite_short', text: 'template_rewrite_short_text' },
-        { name: 'template_rewrite_professional', text: 'template_rewrite_professional_text' },
-        { name: 'template_rewrite_casual', text: 'template_rewrite_casual_text' },
+        { name: 'template_rewrite_detailed', text: 'template_rewrite_detailed_text' },
     ],
     translate: [
-        { name: 'template_translate_default', text: 'default_translate_template' },
+        { name: 'template_translate_quick', text: 'template_translate_quick_text' },
+        { name: 'template_translate_formal', text: 'template_translate_formal_text' },
+        { name: 'template_translate_casual', text: 'template_translate_casual_text' },
     ],
 };
