@@ -3,7 +3,6 @@ export function getMsg(key, ...args) {
     if (chrome && chrome.i18n && chrome.i18n.getMessage) {
         return chrome.i18n.getMessage(key, args);
     }
-    // Fallback for non-extension environments (or if i18n fails)
     let msg = key;
     if (args.length > 0) {
         msg += ': ' + args.join(',');
@@ -13,23 +12,21 @@ export function getMsg(key, ...args) {
 
 export function assemblePrompt(template, data) {
     if (!template) return '';
-    // A simple template engine: replaces {{key}} with data[key]
     return template.replace(/\{\{([\w\.]+)\}\}/g, (match, key) => {
-        // support dot notation for nested objects
         const keys = key.split('.');
         let val = data;
         for (const k of keys) {
             if (val && typeof val === 'object' && k in val) {
                 val = val[k];
             } else {
-                return match; // key not found, return original placeholder
+                return match;
             }
         }
         return val;
     });
 }
 
-// This function will be injected into the target page
+// This function is injected into the target page to interact with the DOM.
 function _do_in_page_script(platform, prompt) {
     const inputEl = document.querySelector(platform.inputSelector);
     if (!inputEl) {
@@ -37,28 +34,37 @@ function _do_in_page_script(platform, prompt) {
         return;
     }
 
-    // To properly trigger framework-based UIs (like React), we need to simulate user input
     inputEl.focus();
-    if (inputEl.hasAttribute('contenteditable')) {
-        // For contenteditable divs, simulating input is more complex.
-        document.execCommand('insertText', false, prompt);
+
+    // Use a robust method to set the input value, compatible with modern frameworks.
+    const isContentEditable = inputEl.hasAttribute('contenteditable') && inputEl.getAttribute('contenteditable').toLowerCase() !== 'false';
+
+    if (isContentEditable) {
+        inputEl.innerText = prompt;
     } else {
-        // For textarea or input fields
-        inputEl.value = prompt;
+        // This approach reliably sets the value for <input> and <textarea> elements,
+        // bypassing framework state management (like React) and then triggering the necessary events.
+        const elementPrototype = Object.getPrototypeOf(inputEl);
+        const nativeInputValueSetter = Object.getOwnPropertyDescriptor(elementPrototype, 'value').set;
+        if (nativeInputValueSetter) {
+            nativeInputValueSetter.call(inputEl, prompt);
+        } else {
+            // Fallback for edge cases
+            inputEl.value = prompt;
+        }
     }
 
-    inputEl.dispatchEvent(new Event('input', { bubbles: true }));
-    inputEl.dispatchEvent(new Event('change', { bubbles: true }));
+    // Dispatch events to ensure the page's JavaScript framework detects the change.
+    inputEl.dispatchEvent(new Event('input', { bubbles: true, composed: true }));
+    inputEl.dispatchEvent(new Event('change', { bubbles: true, composed: true }));
 
     if (platform.sendSelector) {
         setTimeout(() => {
             const sendBtn = document.querySelector(platform.sendSelector);
-            if (sendBtn) {
-                if (sendBtn.disabled) {
-                    console.warn(`[Send-to-AI] Send button is disabled.`);
-                } else {
-                    sendBtn.click();
-                }
+            if (sendBtn && !sendBtn.disabled) {
+                sendBtn.click();
+            } else if (sendBtn) {
+                console.warn(`[Send-to-AI] Send button is disabled for selector: "${platform.sendSelector}"`);
             } else {
                 console.warn(`[Send-to-AI] Send button not found with selector: "${platform.sendSelector}"`);
             }
@@ -70,29 +76,22 @@ function _do_in_page_script(platform, prompt) {
 export function openPlatformWithPrompt(platform, prompt) {
     const { url, inputSelector } = platform;
 
-    // For platforms requiring DOM interaction, open a tab and inject a script
     if (inputSelector) {
         chrome.tabs.create({ url: url }, (tab) => {
-            // Ensure the tab is loaded before injecting the script
-            const listener = (tabId, changeInfo, t) => {
+            const listener = (tabId, changeInfo) => {
                 if (tabId === tab.id && changeInfo.status === 'complete') {
-                    if (chrome.scripting && chrome.scripting.executeScript) {
-                        chrome.scripting.executeScript({
-                            target: { tabId: tab.id },
-                            function: _do_in_page_script,
-                            args: [platform, prompt],
-                        });
-                    } else {
-                        console.error('[Send-to-AI] `chrome.scripting.executeScript` is not available. Check manifest permissions for "scripting".');
-                    }
-                    // unregister listener
+                    chrome.scripting.executeScript({
+                        target: { tabId: tab.id },
+                        function: _do_in_page_script,
+                        args: [platform, prompt],
+                    }).catch(err => console.error('[Send-to-AI] Script injection failed:', err));
+                    
                     chrome.tabs.onUpdated.removeListener(listener);
                 }
             };
             chrome.tabs.onUpdated.addListener(listener);
         });
     } else {
-        // For simple platforms, embed the prompt in the URL
         const destUrl = url.replace('{{prompt}}', encodeURIComponent(prompt));
         chrome.tabs.create({ url: destUrl });
     }

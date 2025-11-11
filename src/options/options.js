@@ -5,19 +5,19 @@ import { fetchMessages, getMessage, localizePage } from '../shared/i18n.js';
 const defaultState = { platforms: [], templates: DEFAULT_TEMPLATES, settings: { defaultLang: 'English', locale: 'en' } };
 
 /* --- Toast notification helpers --- */
-function showToast(message, { type='info', timeout=3000 } = {}){
+function showToast(messageKey, { type='info', timeout=3000 } = {}){
   const container = document.getElementById('toastContainer');
   const t = document.createElement('div');
   t.className = 'toast ' + (type==='success' ? 'success' : type==='error' ? 'error' : '');
-  t.innerHTML = `<div class="toast-msg">${message}</div>`;
+  t.innerHTML = `<div class="toast-msg">${getMessage(messageKey, messageKey)}</div>`; // Translate the message
   container.appendChild(t);
   if(timeout > 0){ setTimeout(()=>{ t.remove(); }, timeout); }
   return t;
 }
 
-function confirmToast(message, { yesLabel=null, noLabel=null, timeout=8000 } = {}){
+function confirmToast(messageKey, { yesLabel=null, noLabel=null, timeout=8000 } = {}){
   return new Promise((resolve)=>{
-    const t = showToast(message, { timeout:0 });
+    const t = showToast(messageKey, { timeout:0 });
     const actions = document.createElement('div');
     actions.className = 'toast-actions';
     const yes = document.createElement('button');
@@ -104,23 +104,23 @@ async function onEditTemplate(e){ showModal('template', { action: e.target.datas
 
 async function onDeletePlatform(e){
   const idx = Number(e.target.dataset.idx);
-  if(await confirmToast(getMessage('delete_confirm_platform', 'Delete this platform?'))){
+  if(await confirmToast('delete_confirm_platform')){
     const store = await chrome.storage.sync.get(defaultState);
     store.platforms.splice(idx,1);
     await chrome.storage.sync.set({platforms: store.platforms});
     load();
-    showToast(getMessage('settings_saved','Changes saved'), { type:'success' });
+    showToast('settings_saved', { type:'success' });
   }
 }
 
 async function onDeleteTemplate(e){
   const { action, idx } = e.target.dataset;
-  if(await confirmToast(getMessage('delete_confirm_template', 'Delete this template?'))){
+  if(await confirmToast('delete_confirm_template')){
     const store = await chrome.storage.sync.get(defaultState);
     store.templates[action].splice(Number(idx),1);
     await chrome.storage.sync.set({templates: store.templates});
     load();
-    showToast(getMessage('settings_saved','Changes saved'), { type:'success' });
+    showToast('settings_saved', { type:'success' });
   }
 }
 
@@ -136,14 +136,14 @@ async function init(){
     const store = await chrome.storage.sync.get(defaultState);
     store.settings.defaultLang = document.getElementById('defaultLang').value || 'English';
     await chrome.storage.sync.set({settings: store.settings});
-    showToast(getMessage('settings_saved','Settings saved'), { type:'success' });
+    showToast('settings_saved', { type:'success' });
   });
 
   document.getElementById('resetSettings').addEventListener('click', async ()=>{
-    if(!await confirmToast(getMessage('confirm_reset','Reset all settings to defaults?'))) return;
+    if(!await confirmToast('confirm_reset')) return;
     await chrome.storage.sync.set(defaultState);
     load();
-    showToast(getMessage('settings_reset','Settings reset to defaults'), { type:'success' });
+    showToast('settings_reset', { type:'success' });
   });
 
   // "Add" button handlers
@@ -226,7 +226,7 @@ function initModal(){
 
     if(mode === 'platform'){
       const name = document.getElementById('modal_platform_name').value.trim();
-      if (!name) { showToast(getMessage('validation_name_required', 'Name is required.'), { type: 'error' }); return; }
+      if (!name) { showToast('validation_name_required', { type: 'error' }); return; }
 
       let platform;
       if (editIdx !== '') {
@@ -251,7 +251,7 @@ function initModal(){
     } else if(mode === 'template'){
       const name = document.getElementById('modal_template_name').value.trim();
       const action = document.getElementById('modal_template_action').value;
-      if (!name) { showToast(getMessage('validation_name_required', 'Name is required.'), { type: 'error' }); return; }
+      if (!name) { showToast('validation_name_required', { type: 'error' }); return; }
 
       const templateText = document.getElementById('modal_template_text').value;
       let template;
@@ -274,7 +274,7 @@ function initModal(){
       }
       await chrome.storage.sync.set({templates: store.templates});
     }
-    showToast(getMessage('settings_saved', 'Changes saved'), { type: 'success' });
+    showToast('settings_saved', { type: 'success' });
     hideModal();
     load();
   });
@@ -290,26 +290,24 @@ async function initLocaleSwitcher(){
     const icon = switcher.querySelector('.icon');
     const label = switcher.querySelector('.label');
 
-    const store = await chrome.storage.sync.get(defaultState);
-    let currentLocale = store.settings.locale || 'en';
-
-    function updateUI() {
-        icon.textContent = currentLocale === 'en' ? '🇻🇳' : '🇬🇧';
-        label.textContent = getMessage(`lang_${currentLocale}`);
+    async function updateUI(locale) {
+        await fetchMessages(locale);
+        icon.textContent = locale === 'en' ? '🇻🇳' : '🇬🇧';
+        label.textContent = getMessage(`lang_${locale}`);
         localizePage();
         load(); 
     }
 
     switcher.addEventListener('click', async () => {
-        currentLocale = currentLocale === 'en' ? 'vi' : 'en';
         const store = await chrome.storage.sync.get(defaultState);
-        store.settings.locale = currentLocale;
+        const newLocale = store.settings.locale === 'en' ? 'vi' : 'en';
+        store.settings.locale = newLocale;
         await chrome.storage.sync.set({ settings: store.settings });
-        await fetchMessages(currentLocale);
-        updateUI();
+        await updateUI(newLocale);
     });
 
-    updateUI();
+    const store = await chrome.storage.sync.get(defaultState);
+    await updateUI(store.settings.locale || 'en');
 }
 
 // Initialize after DOM is ready

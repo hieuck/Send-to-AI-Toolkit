@@ -30,24 +30,24 @@ export const PLATFORMS = [
     name: "platform_poe",
     url: "https://poe.com/",
     domainPatterns: ["poe.com"],
-    inputSelector: 'textarea.GrowingTextArea_textArea__ZWQbP',
-    sendSelector: '[data-button-send="true"]'
+    inputSelector: 'textarea[class*="GrowingTextArea_textArea"]',
+    sendSelector: 'button[class*="sendButton"]'
   },
   {
     key: "perplexity",
     name: "platform_perplexity",
     url: "https://www.perplexity.ai/",
     domainPatterns: ["perplexity.ai"],
-    inputSelector: '#ask-input',
-    sendSelector: '[data-testid="submit-button"]'
+    inputSelector: 'textarea[placeholder*="Ask anything"]',
+    sendSelector: 'button[aria-label*="Submit"]'
   },
   {
     key: "deepseek",
     name: "platform_deepseek",
-    url: "https://chat.deepseek.com/",
+    url: "https://deepseek.ai/chat",
     domainPatterns: ["chat.deepseek.com", "deepseek.ai"],
-    inputSelector: 'textarea._27c9245',
-    sendSelector: 'div._7436101'
+    inputSelector: 'textarea[placeholder*="Enter message"]',
+    sendSelector: 'button[aria-label="send"]'
   },
   {
     key: "grok",
@@ -55,7 +55,7 @@ export const PLATFORMS = [
     url: "https://grok.com/",
     domainPatterns: ["grok.com"],
     inputSelector: 'div.tiptap.ProseMirror',
-    sendSelector: '[aria-label="Gửi"]'
+    sendSelector: 'button[data-testid="send-button"]'
   }
 ];
 
